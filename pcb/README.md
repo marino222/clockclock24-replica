@@ -22,10 +22,3 @@ A separate Motor Controller PCB was introduced to address challenges encountered
 
 3. **Removed ESP32 Mounting Positions**
    - The mounting positions for the ESP32 were removed to make space for the Motor Drivers.
-
-## Credits
-
-- **Clock PCB Design**: [Vallasc](https://github.com/Vallasc)
-- **Motor Controller PCB Design**: [Doctek](https://hackaday.io/doctek)
-
-These modifications aim to enhance the reliability and maintainability of the PCB designs. The separation of the Motor Controller PCB simplifies assembly and ensures compliance with datasheet recommendations for smoother motor performance.
