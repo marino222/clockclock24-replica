@@ -19,6 +19,7 @@ A separate Motor Controller PCB was introduced to address challenges encountered
 2. **Improved Motor Controller Design**
    - The Motor Controller PCB includes all the capacitors and resistors recommended in the official datasheet for the BKA30D-R5 stepper motors. This ensures smoother motor operation.
    - The original design by [Vallasc](https://github.com/Vallasc) lacked decoupling capacitors, which are now included in the Motor Controller PCB.
+   - For more details, refer to the [BKA30D-R5 Datasheet](../docs/datasheets/BKA30D-xx_datasheet.pdf).
 
 3. **Removed ESP32 Mounting Positions**
    - The mounting positions for the ESP32 were removed to make space for the Motor Drivers.
