@@ -23,4 +23,4 @@ This folder contains the design files and manufacturing resources for the KiCad 
   ![Soldered PCB](../../docs/images/speedo-drive_stepper_controller.JPEG)
 
 ### PCB Schematics
-  *(Insert an image of the PCB schematics here)*
+  ![PCB Schematics](../../docs/images/speedo-drive_schematics.png)
