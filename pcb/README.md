@@ -5,7 +5,7 @@ This folder contains the PCB design files for the Clock PCB and a dedicated PCB 
 ## Overview
 
 ### Clock PCB
-The Clock PCB builds upon the design by [Vallasc](https://github.com/Vallasc) in their [clockclock24-replica repository](https://github.com/Vallasc/clockclock24-replica). While the original design provided a solid foundation, several enhancements were implemented to improve functionality and ease of use.
+The Clock PCB is based on the design by [Vallasc](https://github.com/Vallasc) from the [clockclock24-replica repository](https://github.com/Vallasc/clockclock24-replica). The original design was a great starting point, but I made several changes to make it work better and be easier to use.
 
 ### Motor Controller PCB
 A separate Motor Controller PCB was developed to address challenges encountered during testing and assembly. This design is inspired by the project [Stepper Driver for Dashpanel Instruments](https://hackaday.io/project/187630-stepper-driver-for-dashpanel-instruments) by [Doctek](https://hackaday.io/doctek), found on Hackaday.
