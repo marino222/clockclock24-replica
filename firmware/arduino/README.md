@@ -25,7 +25,7 @@ This script was taken from a project on [Hackaday.io](https://hackaday.io/projec
 3. The motor should start moving back and forth.
 
 **Test Setup:**
-![Test Setup](/docs/images/speedo-drive_test-setup.jpeg)
+![Test Setup](/docs/images/speedo-drive_test-setup.JPEG)
 
 
 ## 2. BoardTest
