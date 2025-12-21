@@ -18,7 +18,9 @@ The main firmware is developed using PlatformIO and contains only the final firm
 - **`slave/`**: Source code for the Raspberry Pi Picos (Slaves).
 
 ### Arduino Scripts
-- **`arduino/`**: Contains Arduino scripts used for testing purposes. These scripts were developed and tested using the Arduino IDE. The Arduino IDE can be used for these scripts because the PlatformIO project uses the same Arduino framework, ensuring compatibility.
+- **`arduino/`**: Contains Arduino scripts used for testing purposes. These scripts were developed and tested using the Arduino IDE. Arduino test scripts are faster and easier to set up, avoiding the hassle of configuring PlatformIO projects for simple tests. The Arduino IDE can be used for these scripts because the PlatformIO project uses the same Arduino framework, ensuring compatibility.
 - For detailed explanations about the Arduino test scripts, refer to the [Arduino README](arduino/README.md).
+
+
 
 
