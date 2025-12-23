@@ -1,8 +1,6 @@
 # ClockClock 24 Replica
 
-This project aims to build a replica of the kinetic art piece called "ClockClock 24" by *Humans Since 1982*. It is heavily based on the work done by [Vallasc](https://github.com/Vallasc/clockclock24-replica). I made several modifications on the hardware side of the project.
-
-The whole clock consits of a 8x3 matrix of double shaft stepper motors. Three motors are mounted on a custom PCB of which there are eight in total. The motors are driven by dedicated motor drivers. Each board is controlled by a Raspberry Pi Pico microcontroller which acts as a slave. All slaves are connected to a ESP32 which is the master controller. It sends commands to the slaves via I2C protocol. The ESP32 also hosts a web interface to control the clock.
+This project is a hardware and software replica of the kinetic art piece "ClockClock 24" by *Humans Since 1982*, inspired by and building upon the work of [Vallasc](https://github.com/Vallasc/clockclock24-replica) with several hardware modifications and improvements. The clock features 24 double-shaft stepper motors arranged in an 8x3 matrix, with motors grouped in sets of three on custom PCBs, of which there are eight in total. Each board is controlled by a Raspberry Pi Pico microcontroller acting as a slave, while all slave boards communicate with a central ESP32 master via the I2C protocol. The ESP32 also provides a web interface for remote control and configuration.
 
 ---
 
@@ -61,14 +59,15 @@ ClockClock 24 Replica/
 ### Electronics
 
 #### Motors
-To drive the clock hands, the BKA30D-R5 (equivalent to VID28-05) stepper motors were chosen. They have a total of 4 coils, allowing for two concentric drive shafts which makes them perfect for this application. These motors were originally designed for dashboard applications in the automotive industry. There are a number of other options with concentric shafts, but this one seemed to be most suitable as other similar projects also used it. Furthermore, it is cheaply available (around $4 on Aliexpress) and draws little current.
+To drive the clock hands, the BKA30D-R5 (equivalent to VID28-05) stepper motors were chosen. They have a total of 4 coils, allowing for two concentric drive shafts which makes them perfect for this application. These motors were originally designed for dashboard applications in the automotive industry. There are a number of other options with concentric shafts, but this one seemed to be most suitable as other similar projects also used it. Furthermore, it is cheaply available (around 4$ on Aliexpress) and draws little current.
 
-![BKA30D-R5 stepper motor](docs/images/bka30d-r5.jpg)
-<p align="center"><em>BKA30D-R5 stepper motor</em></p>
+
+<p align="center">
+    <img src="docs/images/bka30d-r5.jpg" alt="BKA30D-R5 stepper motor" width="250" />
+    <br><em>BKA30D-R5 stepper motor</em>
+</p>
 
 The BKA30D-R5 allows for microstepping up to 1/12 degrees per microstep, which is ideal to achieve smooth movement of the clock hands. See datasheet for more details: [BKA30D-R5 Datasheet](docs/datasheets/BKA30D-xx_datasheet.pdf).
-
-
 
 *Note: As standard, this motor comes with mechanical endstops. On Aliexpress there are some vendors that sell it without endstops, otherwise you will need to cut off the endstops yourself.*
 
@@ -81,8 +80,6 @@ The [VID6606 Datasheet](docs/datasheets/VID6606_datasheet.pdf) specifically reco
 
 ![Rendered Motor Driver PCB](docs/images/motor-driver_render.png)
 <p align="center"><em>Rendered image of the motor driver PCB</em></p>
-
-
 
 During testing, I noticed the steppers vibrated quite heavily during movement, leading to increased noise levels. Since a noisy clock is unpleasant, I wanted to reduce the noise. I initially thought the vibrations were caused by the motor drivers and tested multiple alternatives (DRV8834, TMC2208), but it didn't seem to have any major impact. So I stuck with the VID6606 drivers. I found out the vibrations come from substantial mechanical play in the motor shafts, so I addressed this issue during the mechanical design. See [Mechanics](#mechanics).
 
@@ -130,10 +127,13 @@ Even though the power should be enough, the PCBs are designed to have an additio
 
 #### Clock hands
 
+---
 #### Fixation brackets
 
+---
 #### Front panel
 
+---
 ### BOM
 
 ---
