@@ -269,7 +269,7 @@
       "plot": "C:/Users/marin/OneDrive - Hochschule Luzern/ClockClock24/Motor_Test/VID6606 Motor Controller PCB/",
       "pos_files": "C:/Users/marin/OneDrive - Hochschule Luzern/ClockClock24/Motor_Test/VID6606 Motor Controller PCB/",
       "specctra_dsn": "",
-      "step": "",
+      "step": "../../../../../Downloads/SpeedoDrive.step",
       "svg": "",
       "vrml": ""
     },
