@@ -24,3 +24,8 @@ This folder contains the design files and manufacturing resources for the KiCad 
 
 ### PCB Schematics
   ![PCB Schematics](../../docs/images/speedo-drive_schematics.png)
+
+### Mechanical Pin Numbers
+Below is an illustration of the mechanical pin numbers for the Speedo Drive PCB. This image helps identify the physical pin layout and connections for assembly and troubleshooting. The pin numbering shown here was used to design the KiCad footprint for this board.
+
+![Mechanical Pin Numbers](../../docs/images/speedo-drive_mechanical_pin-number.png)
