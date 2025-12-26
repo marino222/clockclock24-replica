@@ -226,12 +226,7 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [
-      [
-        "pin_to_pin|1892300|939800|347574da-65cc-4979-8062-8c1d9f00fce1|101fe45e-5ec5-4ac9-b8b3-1af92f2aa460|/d44c270a-46e9-4168-b30f-ca519853d0c2|/d44c270a-46e9-4168-b30f-ca519853d0c2|/d44c270a-46e9-4168-b30f-ca519853d0c2",
-        ""
-      ]
-    ],
+    "erc_exclusions": [],
     "meta": {
       "version": 0
     },
@@ -492,7 +487,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "",
+      "plot": "C:/Users/marin/github_projects/clockclock24-replica/pcb/Clock PCB/Manufacturing/",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "Clock_PCB.stl",
