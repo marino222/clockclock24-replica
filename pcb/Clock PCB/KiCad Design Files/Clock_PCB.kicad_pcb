@@ -6277,7 +6277,6 @@
 		)
 		(embedded_fonts no)
 		(model "${KICAD9_3DMODEL_DIR}/Module.3dshapes/RaspberryPi_Pico_PinSockets_H8.50mm.step"
-			(hide yes)
 			(offset
 				(xyz 8.89 -24.13 0)
 			)
