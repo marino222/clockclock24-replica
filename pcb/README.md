@@ -1,34 +1,3 @@
-# PCB System Overview
-
-This directory contains all hardware design files for the custom PCBs used in the ClockClock 24 Replica project. The electronics are split into two main boards:
-
-- **Clock PCB:** Hosts three stepper motors, a Raspberry Pi Pico, and connectors for two Motor Driver modules.
-- **Motor Driver:** A breakout board for the VID6606 stepper driver IC, designed to be easily replaceable and compatible with the Clock PCB.
-
-## Directory Guide
-
-- `Clock PCB/` — KiCad design files, manufacturing files, and a detailed BOM for the main clock board.
-- `Motor Driver/` — KiCad design files, manufacturing files, and a detailed BOM for the motor driver breakout board.
-
-## Design Philosophy
-
-The modular approach allows for easy replacement of failed components (especially motor drivers and microcontrollers) without desoldering. Header pins are used for all major modules. This also enables quick swapping of test boards during development.
-
-## Bill of Materials (BOM) Structure
-
-**Main Project BOM:**
-- The global BOM in the main project [`README.md`](../README.md) lists only the major assemblies (e.g., "8x Clock PCB", "16x Motor Driver Modules") and other high-level components. It does not enumerate every resistor or capacitor.
-
-**Subfolder BOMs:**
-- Each PCB subfolder contains a detailed BOM listing all electronic components required to assemble that board. Use these when ordering or assembling the PCBs.
-
-**Workflow:**
-1. Review the main BOM to estimate project cost and gather major parts.
-2. When ready to manufacture a PCB, consult the corresponding subfolder README and BOM for the full component list and assembly instructions.
-
----
-
-For more details on each board, see the respective subfolder README files.
 # PCB Design Files
 
 This folder contains the PCB design files for the Clock PCB and a dedicated PCB for the Stepper Motor Controller. Below is an overview of the designs, modifications, and acknowledgments.
