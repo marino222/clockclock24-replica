@@ -101,6 +101,9 @@ For the project, a custom Clock PCB was designed to hold three BKA30D-R5 motors,
 
 As a design choice, the PCB uses header pins to connect the motor drivers and the microcontroller. This makes it easy to replace components in case they break. While testing, this happened multiple times. Since the motor controllers were directly soldered onto the PCB in the beginning, I ended up throwing away the whole PCB each time a motor driver broke. The header pins solve this problem. As a bonus, the Picos can be switched out easily. This proved useful to quickly run a test program by replacing the "normal" slave controller with a test controller running different firmware.
 
+![Rendered Motor Driver PCB](docs/images/clock-pcb-render.png)
+<p align="center"><em>Rendered image of the Clock PCB. See PCB directory for more info</em></p>
+
 ---
 
 #### Power Supply
