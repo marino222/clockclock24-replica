@@ -74,7 +74,7 @@ The BKA30D-R5 allows for microstepping up to 1/12 degrees per microstep, which i
 ---
 
 #### Motor Drivers
-The steppers could in theory be driven directly from the microcontroller. However, the GPIO pins are limited and it is usually best practice to use a dedicated motor driver. For this reason, the VID6606 motor driver was chosen. It is specifically designed for the BKA30D-R5 (VID28-05) motor. One VID6606 can drive two motors (4 coils) in total. Per motor, it only needs two inputs: `f(SCX)` and `DIR`. As standard, this controller has built-in microstepping, which means with each rising edge of the SCX input the motor will perform one microstep in the direction specified by the DIR input.
+The steppers could in theory be driven directly from the microcontroller. However, the GPIO pins are limited and it is usually best practice to use a dedicated motor driver. For this reason, the VID6606 motor driver was chosen. It is specifically designed for the BKA30D-R5 (VID28-05) motor. One VID6606 can drive 4 motors (8 coils) in total. Per motor, it only needs two inputs: `f(SCX)` and `DIR`. As standard, this controller has built-in microstepping, which means with each rising edge of the SCX input the motor will perform one microstep in the direction specified by the DIR input.
 
 The [VID6606 Datasheet](docs/datasheets/VID6606_datasheet.pdf) specifically recommends the use of smoothing capacitors to reduce electrical noise. Therefore, this [Motor-Controller-PCB from Hackaday](https://hackaday.io/project/187630-stepper-driver-for-dashpanel-instruments) was used. I didn't make any changes to it because it was already tested by [doctek](https://hackaday.io/doctek). Thus, it is designed to be used as a breakout board on the custom Clock PCB.
 
