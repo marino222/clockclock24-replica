@@ -145,9 +145,62 @@ Even though the power should be enough, the PCBs are designed to have an additio
 
 ### Master
 
+The master firmware runs on an ESP32 microcontroller and serves as the central brain of the clock system. Its primary responsibilities include:
+
+- **Time Synchronization**: Connects to WiFi and retrieves the current time via NTP (Network Time Protocol), automatically handling time zones and daylight saving time adjustments
+- **I2C Communication**: Acts as the I2C master, sending synchronized commands to all eight slave boards to coordinate motor movements
+- **Web Server**: Hosts a responsive web interface accessible via the ESP32's IP address, allowing users to control the clock remotely
+- **Clock Logic**: Orchestrates the display logic, calculating which motor positions are needed to form digits and managing transitions between different display modes
+
+The master code is built using PlatformIO with the Arduino framework and can be configured for different WiFi networks and time zones.
+
 ### Slave
 
+The slave firmware runs on each of the eight Raspberry Pi Pico microcontrollers, with each board responsible for controlling three BKA30D-R5 stepper motors (six individual clock hands). Key features include:
+
+- **I2C Communication**: Listens for commands from the ESP32 master via I2C protocol
+- **Motor Control**: Uses the AccelStepper library to provide smooth, accelerated motor movements with precise positioning
+- **Automatic Addressing**: Determines its I2C address automatically based on DIP switch configuration (see below)
+- **Calibration**: Supports motor homing sequences to establish reference positions for accurate timekeeping
+
+Each slave board operates independently once it receives position commands from the master, managing the acceleration profiles and step timing for its three motors in parallel.
+
+Each slave board (Raspberry Pi Pico) determines its I2C address automatically based on four DIP switch pins (ADDR_1 through ADDR_4) defined in [`board_config.h`](firmware/platformio/slave/include/board_config.h). The address is calculated in [`board.cpp`](firmware/platformio/slave/src/board.cpp) by reading the state of these pins, which use INPUT_PULLUP logic. When a DIP switch is ON (connected to ground), it represents a binary 1; when OFF (open/floating), it represents a binary 0.
+
+The master controller sends commands to each board sequentially using the formula `index + 1` as seen in [`clock_manger.cpp`](firmware/platformio/master/src/clock_manger.cpp), where index 0 corresponds to I2C address 1 (the leftmost board).
+
+#### Board Address Configuration (Left to Right)
+
+| I2C Address | Binary | DIP 4 | DIP 3 | DIP 2 | DIP 1|
+|-------------------|-------------|--------|----------------|--------------|--------------|
+| 0 | 0000 | 0 | 0 | 0 | 0 |
+| 1 | 0001 | 0 | 0 | 0 | 1 |
+| 2 | 0010 | 0 | 0 | 1 | 0 |
+| 3 | 0011 | 0 | 0 | 1 | 1 |
+| 4 | 0100 | 0 | 1 | 0 | 0 |
+| 5 | 0101 | 0 | 1 | 0 | 1 |
+| 6 | 0110 | 0 | 1 | 1 | 0 |
+| 7 | 0111 | 0 | 1 | 1 | 1 |
+
+![DIP Switch](docs/images/dip_switch.jpg)
+
+**Note:** The I2C address is calculated as `1 + binary value`. Each DIP switch state represents: **1** = switch ON (connected to GND), **0** = switch OFF (open/floating). The physical 4-position DIP switch is mounted in reverse order: physical DIP 1 (leftmost) is unused, physical DIP 2 corresponds to `DIP_SW_3` in the code (MSB, weight=4), physical DIP 3 to `DIP_SW_2` (weight=2), and physical DIP 4 (rightmost) to `DIP_SW_1` (LSB, weight=1).
+
+
+
 ### Web Interface
+
+The web interface provides an intuitive control panel for the ClockClock 24, built using HTML, CSS, and JavaScript. It offers the following features:
+
+- **Real-Time Clock Control**: Display the current time with smooth transitions between minutes
+- **WiFi Configuration**: Configure network credentials and connection settings directly through the web UI
+- **Display Modes**: Switch between different modes including time display, custom patterns, animations, and demo sequences
+- **Manual Control**: Ability to manually position individual clock hands for testing and calibration purposes
+- **System Status**: View connection status, current time, and system information
+
+To access the web interface, connect to the same WiFi network as the ESP32 and navigate to its IP address in any web browser. The interface is responsive and works on both desktop and mobile devices.
+
+For detailed build and upload instructions, see the [firmware README](firmware/README.md).
 
 ---
 

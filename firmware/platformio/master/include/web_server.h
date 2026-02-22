@@ -69,6 +69,11 @@ void handle_post_sleep();
 void handle_post_connection();
 
 /**
+ * Handles POST /test
+*/
+void handle_post_test();
+
+/**
  * Check if the client changed the time
  * @return true if the client makes a request, false otherwise
 */

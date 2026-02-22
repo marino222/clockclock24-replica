@@ -75,3 +75,41 @@ The script uses 4 GPIO pins as a binary input (DIP switch).
 | 0 1 0 1 | 0x5 | **Motor F** |
 
 *Note: 0 = OFF, 1 = ON*
+
+---
+
+## 4. SerialBoardTest (Serial Motor Control)
+
+**Purpose:**
+This is an interactive test utility that allows you to test individual motors via serial commands. Instead of using hardware switches or waiting for sequential tests, you simply type a letter (A-F) in the Serial Monitor to test the corresponding motor. This provides the most convenient way to debug specific motor channels during development and troubleshooting.
+
+**Functionality:**
+- Listens for serial input (characters 'A' through 'F').
+- When a valid letter is received, the corresponding motor is selected and tested.
+- Each motor rotates forward one full rotation, then backward one full rotation.
+- After completing both directions, the test stops and waits for the next command.
+- Supports both uppercase and lowercase input.
+
+**Motor Selection:**
+
+| Serial Input | Motor Selected |
+| :---: | :---: |
+| **A** or **a** | Motor A |
+| **B** or **b** | Motor B |
+| **C** or **c** | Motor C |
+| **D** or **d** | Motor D |
+| **E** or **e** | Motor E |
+| **F** or **f** | Motor F |
+
+**Usage:**
+1. Flash the `SerialBoardTest.ino` sketch to the main controller board.
+2. Open the Serial Monitor (set to 115200 baud).
+3. Type a letter (A-F) and press Enter to test the corresponding motor.
+4. Watch the serial output for test progress and completion messages.
+5. Repeat with different letters to test other motors.
+
+**Advantages:**
+- No need for external hardware (DIP switches or address pins).
+- Easy to use during development and debugging.
+- Provides real-time feedback via serial messages.
+- Can quickly switch between testing different motors without reflashing.
