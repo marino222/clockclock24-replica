@@ -171,16 +171,16 @@ The master controller sends commands to each board sequentially using the formul
 
 #### Board Address Configuration (Left to Right)
 
-| I2C Address | Binary | DIP 4 | DIP 3 | DIP 2 | DIP 1|
+| I2C Address | Binary | DIP 1 | DIP 2 | DIP 3 | DIP 4|
 |-------------------|-------------|--------|----------------|--------------|--------------|
-| 1 | 0000 | 0 | 0 | 0 | 0 |
-| 2 | 0001 | 0 | 0 | 0 | 1 |
-| 3 | 0010 | 0 | 0 | 1 | 0 |
-| 4 | 0011 | 0 | 0 | 1 | 1 |
-| 5 | 0100 | 0 | 1 | 0 | 0 |
-| 6 | 0101 | 0 | 1 | 0 | 1 |
-| 7 | 0110 | 0 | 1 | 1 | 0 |
-| 8 | 0111 | 0 | 1 | 1 | 1 |
+| 1 | 0001 | 0 | 0 | 0 | 1 |
+| 2 | 0010 | 0 | 0 | 1 | 0 |
+| 3 | 0011 | 0 | 0 | 1 | 1 |
+| 4 | 0100 | 0 | 1 | 0 | 0 |
+| 5 | 0101 | 0 | 1 | 0 | 1 |
+| 6 | 0110 | 0 | 1 | 1 | 0 |
+| 7 | 0111 | 0 | 1 | 1 | 1 |
+| 8 | 1000 | 1 | 0 | 0 | 0 |
 
 ![DIP Switch](docs/images/dip_switch.jpg)
 
