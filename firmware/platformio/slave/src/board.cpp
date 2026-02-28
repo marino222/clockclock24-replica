@@ -4,10 +4,10 @@
 ClockAccelStepper _motors[6] = {
   ClockAccelStepper(ClockAccelStepper::DRIVER, F_STEP, F_DIR), // 0 -> h clock 0
   ClockAccelStepper(ClockAccelStepper::DRIVER, E_STEP, E_DIR), // 1 -> m clock 0
-  ClockAccelStepper(ClockAccelStepper::DRIVER, D_STEP, D_DIR), // 2 -> h clock 1
-  ClockAccelStepper(ClockAccelStepper::DRIVER, C_STEP, C_DIR), // 3 -> m clock 1
-  ClockAccelStepper(ClockAccelStepper::DRIVER, B_STEP, B_DIR), // 4 -> h clock 2
-  ClockAccelStepper(ClockAccelStepper::DRIVER, A_STEP, A_DIR)  // 5 -> m clock 2
+  ClockAccelStepper(ClockAccelStepper::DRIVER, B_STEP, B_DIR), // 2 -> h clock 1
+  ClockAccelStepper(ClockAccelStepper::DRIVER, A_STEP, A_DIR), // 3 -> m clock 1
+  ClockAccelStepper(ClockAccelStepper::DRIVER, D_STEP, D_DIR), // 4 -> h clock 2
+  ClockAccelStepper(ClockAccelStepper::DRIVER, C_STEP, C_DIR)  // 5 -> m clock 2
 };
 
 uint8_t _i2c_address = 0;
