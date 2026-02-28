@@ -43,10 +43,15 @@ int activeMotor = -1;       // -1 indicates idle (no motor selected)
 bool directionForward = true;
 bool moveStarted = false;
 
+// State variables for synchronized motor test (X command)
+bool syncMode = false;
+int syncPhase = 0;  // 0 = A,C,E forward, 1 = A,C,E backward, 2 = B,D,F forward, 3 = B,D,F backward
+
 void setup() {
   Serial.begin(115200);
   Serial.println("ClockClock 24 replica board test (Serial motor control)");
   Serial.println("Type a letter (A - F) and press Enter to test a motor.");
+  Serial.println("Type X to test motors synchronously (A,C,E then B,D,F).");
 
   pinMode(25, OUTPUT);  // GPIO25 = Onboard LED
   digitalWrite(25, HIGH);
@@ -55,7 +60,8 @@ void setup() {
   pinMode(RESET, OUTPUT);
   digitalWrite(RESET, HIGH);
 
-  // Set all motor parameters
+  // Set all motor parametersc
+  
   for (uint8_t i = 0; i < NUM_MOTORS; i++) {
     motors[i]->setMaxSpeed(16000);
     motors[i]->setAcceleration(2000);
@@ -71,13 +77,29 @@ void loop() {
     // Convert to uppercase to handle both 'a' and 'A' inputs
     inChar = toupper(inChar); 
     
+    // Check for synchronized test mode
+    if (inChar == 'X') {
+      syncMode = true;
+      syncPhase = 0;
+      moveStarted = false;
+      activeMotor = -1;  // Disable single motor mode
+      
+      // Reset positions for motors A, C, E
+      s_A.setCurrentPosition(0);
+      s_C.setCurrentPosition(0);
+      s_E.setCurrentPosition(0);
+      
+      Serial.println("------------------------------------");
+      Serial.println("Selected: Synchronized Motor Test");
+    }
     // Check if the character is valid (A through F)
-    if (inChar >= 'A' && inChar <= 'F') {
+    else if (inChar >= 'A' && inChar <= 'F') {
       activeMotor = inChar - 'A'; // Maps 'A'->0, 'B'->1, etc.
       
       // Reset state variables for the new test
       directionForward = true;
       moveStarted = false;
+      syncMode = false;  // Disable sync mode
       
       // Zero out the target position to ensure a clean start
       motors[activeMotor]->setCurrentPosition(0);
@@ -88,8 +110,91 @@ void loop() {
     }
   }
 
-  // 2. Drive the selected motor (if one is active)
-  if (activeMotor >= 0 && activeMotor < NUM_MOTORS) {
+  // 2. Handle synchronized motor test mode
+  if (syncMode) {
+    if (!moveStarted) {
+      long target;
+      
+      switch (syncPhase) {
+        case 0:  // A, C, E forward
+          target = STEPS;
+          s_A.moveTo(target);
+          s_C.moveTo(target);
+          s_E.moveTo(target);
+          Serial.println("Running A, C, E forward...");
+          break;
+        
+        case 1:  // A, C, E backward
+          target = -STEPS;
+          s_A.moveTo(target);
+          s_C.moveTo(target);
+          s_E.moveTo(target);
+          Serial.println("Running A, C, E backward...");
+          break;
+        
+        case 2:  // B, D, F forward
+          target = STEPS;
+          s_B.setCurrentPosition(0);  // Reset positions
+          s_D.setCurrentPosition(0);
+          s_F.setCurrentPosition(0);
+          s_B.moveTo(target);
+          s_D.moveTo(target);
+          s_F.moveTo(target);
+          Serial.println("Running B, D, F forward...");
+          break;
+        
+        case 3:  // B, D, F backward
+          target = -STEPS;
+          s_B.moveTo(target);
+          s_D.moveTo(target);
+          s_F.moveTo(target);
+          Serial.println("Running B, D, F backward...");
+          break;
+      }
+      moveStarted = true;
+    }
+    
+    // Run the appropriate motors based on current phase
+    if (syncPhase <= 1) {
+      s_A.run();
+      s_C.run();
+      s_E.run();
+      
+      // Check if all motors have reached target
+      if (s_A.distanceToGo() == 0 && s_C.distanceToGo() == 0 && s_E.distanceToGo() == 0) {
+        syncPhase++;
+        moveStarted = false;
+        
+        if (syncPhase == 2) {
+          // Reset A, C, E positions before starting B, D, F
+          s_A.setCurrentPosition(0);
+          s_C.setCurrentPosition(0);
+          s_E.setCurrentPosition(0);
+        }
+      }
+    } else if (syncPhase <= 3) {
+      s_B.run();
+      s_D.run();
+      s_F.run();
+      
+      // Check if all motors have reached target
+      if (s_B.distanceToGo() == 0 && s_D.distanceToGo() == 0 && s_F.distanceToGo() == 0) {
+        syncPhase++;
+        moveStarted = false;
+        
+        if (syncPhase > 3) {
+          // All synchronized tests complete
+          s_B.setCurrentPosition(0);
+          s_D.setCurrentPosition(0);
+          s_F.setCurrentPosition(0);
+          syncMode = false;
+          Serial.println("Synchronized test complete. Enter a letter A-F or X for the next test.");
+        }
+      }
+    }
+  }
+  // 3. Drive the selected motor (if one is active)
+  else if (activeMotor >= 0 && activeMotor < NUM_MOTORS) {
     AccelStepper* m = motors[activeMotor];
 
     // Initiate the move if not already started
@@ -116,7 +221,7 @@ void loop() {
         // Backward test complete -> return to idle state
         m->setCurrentPosition(0);
         activeMotor = -1; // Go back to waiting for serial input
-        Serial.println("Test complete. Enter a letter A-F for the next test.");
+        Serial.println("Test complete. Enter a letter A-F or X for the next test.");
       }
     }
   }
