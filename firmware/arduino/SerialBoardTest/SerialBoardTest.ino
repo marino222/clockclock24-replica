@@ -63,8 +63,8 @@ void setup() {
   // Set all motor parametersc
   
   for (uint8_t i = 0; i < NUM_MOTORS; i++) {
-    motors[i]->setMaxSpeed(16000);
-    motors[i]->setAcceleration(2000);
+    motors[i]->setMaxSpeed(1500);
+    motors[i]->setAcceleration(400);
     motors[i]->setCurrentPosition(0);
   }
 }
