@@ -490,7 +490,7 @@
       "plot": "C:/Users/marin/github_projects/clockclock24-replica/pcb/Clock PCB/Manufacturing/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "Clock_PCB.stl",
+      "step": "../Clock_PCB.step",
       "svg": "",
       "vrml": ""
     },
