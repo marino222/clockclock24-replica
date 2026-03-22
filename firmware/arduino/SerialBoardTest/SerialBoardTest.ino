@@ -7,25 +7,25 @@
 #include <Arduino.h>
 #include <AccelStepper.h>
 
+
 #define STEPS (360 * 12)
 
-#define A_STEP 0  // f(scx)
-#define A_DIR 1   // CW/CCW
-#define B_STEP 2  // f(scx)
-#define B_DIR 3   // CW/CCW
+#define A_STEP 0
+#define A_DIR  1
+#define B_STEP 2
+#define B_DIR  3
 
-#define C_STEP 26  // f(scx)
-#define C_DIR 27   // CW/CCW
-#define D_STEP 6   // f(scx)
-#define D_DIR 7    // CW/CCW
+#define C_STEP 26
+#define C_DIR  27
+#define D_STEP 6
+#define D_DIR  7
 
-#define E_STEP 8   // f(scx)
-#define E_DIR 9    // CW/CCW
-#define F_STEP 10  // f(scx)
-#define F_DIR 11   // CW/CCW
+#define E_STEP 8
+#define E_DIR  9
+#define F_STEP 10
+#define F_DIR  11
 
 #define RESET 22
-
 // Stepper objects
 AccelStepper s_A(AccelStepper::DRIVER, A_STEP, A_DIR);
 AccelStepper s_B(AccelStepper::DRIVER, B_STEP, B_DIR);

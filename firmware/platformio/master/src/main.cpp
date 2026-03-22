@@ -15,6 +15,9 @@ int last_hour = -1;
 int last_minute = -1;
 bool is_stopped = false;
 
+#define I2C_SCAN_INTERVAL_MS 5000
+unsigned long last_i2c_scan_ms = 0;
+
 /**
  * Sets clock to the current time
 */
@@ -46,14 +49,23 @@ void stop();
 */
 void _delay(int value);
 
+/**
+ * Scans all I2C addresses and prints found devices to Serial
+*/
+void i2c_scan();
+
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(11520  _i2c_address = !digitalRead(ADDR_1) + 
+                 (!digitalRead(ADDR_2) << 1) + 
+                 (!digitalRead(ADDR_3) << 2) + 
+                 (!digitalRead(ADDR_4) << 3);0);
   Serial.println("\nclockclock24 replica by Vallasc master v1.0");
   delay(3000);
   // Load configuration from EEPROM
   begin_config();
 
   Wire.begin();
+  i2c_scan();
   pinMode(LED_BUILTIN, OUTPUT);
 
   if(get_connection_mode() == HOTSPOT)
@@ -100,6 +112,12 @@ void loop() {
 
   update_MDNS();
   handle_webclient();
+
+  if (millis() - last_i2c_scan_ms >= I2C_SCAN_INTERVAL_MS)
+  {
+    last_i2c_scan_ms = millis();
+    i2c_scan();
+  }
 }
 
 void set_time()
@@ -173,6 +191,24 @@ void stop()
     set_acceleration(100);
     set_clock(d_stop);
   }
+}
+
+void i2c_scan()
+{
+  Serial.println("\n--- I2C Scanner ---");
+  int found = 0;
+  for (uint8_t addr = 1; addr < 127; addr++)
+  {
+    Wire.beginTransmission(addr);
+    if (Wire.endTransmission() == 0)
+    {
+      Serial.printf("  Found device at 0x%02X (decimal %d)\n", addr, addr);
+      found++;
+    }
+  }
+  if (found == 0)
+    Serial.println("  No I2C devices found!");
+  Serial.printf("--- Scan done, %d device(s) found ---\n\n", found);
 }
 
 void _delay(int value)

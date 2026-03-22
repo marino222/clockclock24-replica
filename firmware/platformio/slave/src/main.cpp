@@ -35,6 +35,7 @@ void receiveEvent(int how_many)
 void setup()
 {  
   Serial.begin(115200);
+  while (!Serial) delay(10); // wait for serial port to connect 
   Serial.println("clockclock24 replica by Vallasc slave v1.0");
 
   pinMode(LED_BUILTIN, OUTPUT);

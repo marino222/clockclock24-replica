@@ -1,9 +1,9 @@
 #include <AccelStepper.h>
 
 // --- Pins (change to your wiring) ---
-constexpr uint8_t STEP_PIN = 7;   // -> VID6606 StpA (f(scx)A)
-constexpr uint8_t DIR_PIN  = 6;   // -> VID6606 DirA (CW/CCWA)
-constexpr uint8_t RST_PIN  = 20;   // -> VID6606 RESET (active-low reset, must be HIGH to run)
+constexpr uint8_t STEP_PIN = 10;   // -> VID6606 StpA (f(scx)A)
+constexpr uint8_t DIR_PIN  = 11;   // -> VID6606 DirA (CW/CCWA)
+constexpr uint8_t RST_PIN  = 22;   // -> VID6606 RESET (active-low reset, must be HIGH to run)
 
 // --- Motor model assumptions ---
 // VID6606 outputs microsteps (1 pulse = 1 microstep). :contentReference[oaicite:4]{index=4}
