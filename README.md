@@ -81,7 +81,9 @@ The [VID6606 Datasheet](docs/datasheets/VID6606_datasheet.pdf) specifically reco
 ![Rendered Motor Driver PCB](docs/images/motor-driver_render.png)
 <p align="center"><em>Rendered image of the motor driver PCB</em></p>
 
-During testing, I noticed the steppers vibrated quite heavily during movement, leading to increased noise levels. Since a noisy clock is unpleasant, I wanted to reduce the noise. I initially thought the vibrations were caused by the motor drivers and tested multiple alternatives (DRV8834, TMC2208), but it didn't seem to have any major impact. So I stuck with the VID6606 drivers. I found out the vibrations come from substantial mechanical play in the motor shafts, so I addressed this issue during the mechanical design. See [Mechanics](#mechanics).
+During testing, the steppers were quite noisy. I first suspected the motor drivers and tried some alternatives (DRV8834, TMC2208), but that didn't help much, so I stayed with the VID6606. 
+
+The real cause turned out to be mechanical play in the motor shafts. I also noticed the noise only appears at certain speeds, at full speed it mostly goes away. So adjusting the acceleration profile in software might help. For now I decided to leave the mechanical play as-is, since adding a bearing would be quite complex. I plan to experiment with the AccelStepper parameters (see [Software](#software)).
 
 ---
 
@@ -104,14 +106,16 @@ As a design choice, the PCB uses header pins to connect the motor drivers and th
 ![Rendered Motor Driver PCB](docs/images/clock-pcb-render.png)
 <p align="center"><em>Rendered image of the Clock PCB. See PCB directory for more info</em></p>
 
+![Assembled Clock PCB](docs/images/pcb_assembled.jpg)
+<p align="center"><em>Assembled Clock PCB</em></p>
+
 ---
 
 #### Power Supply
-All the PCBs are connected by a JST-XH 4-pin connector in a daisy chain. Two wires are used for power (5V and ground) and two wires are used for I2C communication (SDA and SCL). In theory, it should be possible to power all eight PCBs from one Raspberry Pi Pico connected to a power supply via USB-C.
+All the PCBs are connected by a JST-XH 4-pin connector in a daisy chain. Two wires are used for power (5V and ground) and two wires are used for I2C communication (SDA and SCL). In theory, it should be possible to power all eight PCBs from one Raspberry Pi Pico connected to a power supply via USB-C. However, in reality this didnt work (see below).
 
 
-
-##### Power Consumption Table
+#### Power Consumption Table
 
 | Device                | Normal Current (mA) | Peak Current (mA) | Quantity | Total Normal (mA) | Total Peak (mA) |
 |-----------------------|---------------------|-------------------|----------|-------------------|-----------------|
@@ -120,24 +124,86 @@ All the PCBs are connected by a JST-XH 4-pin connector in a daisy chain. Two wir
 | ESP32                 | 260                 | 700               | 1        | 260               | 700             |
 | **Total**             |                     |                   |          | **1140**          | **1980**        |
 
-This table summarizes the estimated current draw for each device during normal operation and at peak. The total values are calculated for 8 Raspberry Pi Picos, 24 stepper motors, and 1 ESP32.
+This table shows the estimated current draw for each device during normal use and at peak. The totals are for 8 Raspberry Pi Picos, 24 stepper motors, and 1 ESP32.
 
-A Raspberry Pi Pico can provide up to 2A of current from the VBUS pin when powered via USB-C. It shows that even at peak times, the total current draw should be below 2A.
+A Raspberry Pi Pico can provide up to 2 A via the VBUS pin when powered over USB-C, which should be enough even at peak load.
 
-Even though the power should be enough, the PCBs are designed to have an additional power input via a 2-pin JST connector. If there is a power issue, each PCB can be powered individually by a proper 5V power supply.
+In practice I ran into power problems. When all motors start up at the same time, they draw a lot of current and the Pico's supply couldn't keep up, causing the ESP32 or some Picos to randomly shut down. To fix this, each PCB has an extra 2-pin JST power input. I disconnected the +5V lines on the JST-XH 4-pin connectors (GND and I2C stay connected) and wired the 2-pin terminals with 18 AWG wire and WAGO clamps to a separate supply.
+
+The worst-case current draw is around 4 A, so I chose a 5 V / 6 A (30 W) PSU from [Amazon](https://www.amazon.de/dp/B0FY6691ZL), which gives a 2 A safety margin. It connects via a standard barrel jack that came with the PSU.
+
+
+![Rendered Motor Driver PCB](docs/images/electronics_connected.jpg)
+<p align="center"><em>Image of the connected PCBs</em></p>
+
 
 ### Mechanics
 
-#### Clock hands
+All mechanical parts are modeled in CAD. See the [3D files README](3D%20files/README.md) for the full assembly and a list of all printable parts.
+
+#### Wooden Frame & Front panel
+
+For the front panel I wanted a clean matte white look. After exploring several options (PVC, painted MDF, Corian), I found [expresszuschnitt.de](https://expresszuschnitt.de/) where you can order custom laser-cut materials. I ordered some samples and went with matte white acrylic (PERSPEX® Frost). The quality is excellent and the finish looks great. The front panel is bonded to the wooden frame with 3M VHB tape.
+
+The frame itself is made from four wooden beams (see [BOM](#bom) for dimensions), connected at the corners by 3D-printed brackets that are screwed onto the beams.
+
+![Wooden frame and front panel](docs/images/frame_panel.JPEG)
+<p align="center"><em>Wooden frame with acrylic front panel</em></p>
+
+To give the clock a picture-frame look, I added medium oak ledges glued onto the main frame with mitered corners. Cutting accurate miters with basic tools was tricky, but after some sanding and oiling the result looks quite nice.
+
+![Outer frame being glued](docs/images/outer_frame_glue.png)
+<p align="center"><em>Gluing the outer oak frame</em></p>
+
+![Finished outer frame](docs/images/outer_frame_finished.JPEG)
+<p align="center"><em>Finished outer frame</em></p>
+
 
 ---
-#### Fixation brackets
 
----
-#### Front panel
+#### 2×3 Clock Arrays
+
+The motors are grouped into 2×3 arrays. Each array consists of two PCBs connected by PCB mounts. Screw spacers raise the PCBs to the correct depth so the clock hands sit at the right position on the front. Everything is held together with M3 hex screws and threaded inserts.
+
+<p align="center">
+    <img src="docs/images/clock_array_exploded.png" alt="2×3 clock array exploded view" width="55%" />
+    <img src="docs/images/clock_array_front.png" alt="2×3 clock array front view" width="33%" />
+</p>
+<p align="center"><em>Exploded view (left) and front view (right) of a 2×3 clock array</em></p>
+
+The arrays are aligned with the holes in the front panel using the [`mounting_aid.stl`](3D%20files/README.md) and then screwed to the wooden frame. The PSU barrel jack is clamped to the bottom of the frame with a 3D-printed bracket. A small cutout in the outer frame lets the power cable pass through.
+
+![Clock arrays mounted to the frame](docs/images/clock_arrays_mounted.jpg)
+<p align="center"><em>Clock arrays mounted to the frame</em></p>
 
 ---
 ### BOM
+
+| Component | Description | Quantity | Source | Link |
+|-----------|-------------|----------|--------|------|
+| Clock PCB | Custom PCB holding 3 motors and a Raspberry Pi Pico. See PCB directory for the electronic BOM | 8 | JLCPCB, parts from AliExpress | [PCB README](pcb/Clock%20PCB/README.md) |
+| PCB Mount (3D printed) | Mounts two PCBs together into one 2×3 array. 3 pieces per array | 9 | Self-printed | [3D files README](3D%20files/README.md) |
+| PCB Mount Bottom (3D printed) | Same as PCB Mount but with corrected hole positions for the bottom PCB | 3 | Self-printed | [3D files README](3D%20files/README.md) |
+| Mounting Bracket (3D printed) | Connects a 2×3 clock array to the wooden frame | 6 | Self-printed | [3D files README](3D%20files/README.md) |
+| PSU Bracket (3D printed) | Clamps the PSU barrel jack to the wooden frame | 1 | Self-printed | [3D files README](3D%20files/README.md) |
+| Frame Connector (3D printed) | Connects the outer frame corners. Parts are mirrored for each corner | 4 | Self-printed | [3D files README](3D%20files/README.md) |
+| Screw Spacer (3D printed) | Raises PCBs slightly off the mounting brackets | 80 | Self-printed | [3D files README](3D%20files/README.md) |
+| Lower Hand (3D printed) | Hour clock hand | 24 | Self-printed | [3D files README](3D%20files/README.md) |
+| Upper Hand (3D printed) | Minute clock hand | 24 | Self-printed | [3D files README](3D%20files/README.md) |
+| Acrylic Front Panel | PERSPEX® Frost matte white acrylic, 900×400×5 mm | 1 | Imported from Germany | [expresszuschnitt.de](https://expresszuschnitt.de/) |
+| Main Frame Long | 20×45×900 mm wood beam | 2 | Hardware store | [Jumbo](https://www.jumbo.ch/de/bauen-renovieren/holz/leisten-staebe/rechteckleisten/oecoplan-dachlatte-gehobelt-20-x-45mm--1m/p/4974449) |
+| Main Frame Short | 20×45×400 mm wood beam | 2 | Hardware store | [Jumbo](https://www.jumbo.ch/de/bauen-renovieren/holz/leisten-staebe/rechteckleisten/oecoplan-dachlatte-gehobelt-20-x-45mm--1m/p/4974449) |
+| Outer Frame Long | 8×40×920 mm oak ledge | 2 | Hardware store | [Jumbo](https://www.jumbo.ch/de/bauen-renovieren/holz/leisten-staebe/rechteckleisten/rechteckleiste-eiche-8x40-mm-1-m/p/4974225) |
+| Outer Frame Short | 8×40×420 mm oak ledge | 2 | Hardware store | [Jumbo](https://www.jumbo.ch/de/bauen-renovieren/holz/leisten-staebe/rechteckleisten/rechteckleiste-eiche-8x40-mm-1-m/p/4974225) |
+| Power Supply | 5 V / 6 A (30 W) PSU | 1 | Amazon | [Amazon](https://www.amazon.de/dp/B0FY6691ZL) |
+| Power Wire | 18 AWG | ~3 m | AliExpress | |
+| WAGO Clamps | Model 221-413 (3-conductor) | 14 | AliExpress | |
+| 3M VHB Tape | 19 mm width | ~1 m | Hardware store | [3M Switzerland](https://www.3mschweiz.ch/3M/de_CH/p/c/klebebander/b/vhb/) |
+| Countersunk Wood Screw | 4×16 mm | 24 | Hardware store | [Jumbo](https://www.jumbo.ch/de/maschinen-werkstatt/kleineisenwaren/schrauben/holzschrauben/ayce-senkkopf-universalholzschraube--4--16-mm/p/6932501) |
+| Hex Screw | M3×8 mm | 96 | AliExpress | |
+| Threaded Insert | M3×4×4 mm (for 3D-printed parts) | 96 | AliExpress | |
+
+
 
 ---
 

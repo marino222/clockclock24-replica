@@ -45,7 +45,7 @@ This BOM lists only the components that need to be soldered onto the Clock PCB. 
 
 ### Assembled Clock PCB Example
 <p align="center">
-  <img src="../../docs/images/clock-pcb_assembled.jpg" alt="Assembled Clock PCB" width="400" />
+  <img src="../../docs/images/pcb_assembled.jpg" alt="Assembled Clock PCB" width="400" />
   <br><em>Assembled Clock PCB</em>
 </p>
 
