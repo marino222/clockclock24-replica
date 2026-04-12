@@ -42,6 +42,12 @@ void board_begin()
                (!digitalRead(ADDR_2) << 1) + 
                (!digitalRead(ADDR_3) << 2) + 
                (!digitalRead(ADDR_4) << 3);
+  Serial.printf("I2C address: %d (DIP: %d%d%d%d)\n", 
+    _i2c_address,
+    !digitalRead(ADDR_4),
+    !digitalRead(ADDR_3),
+    !digitalRead(ADDR_2),
+    !digitalRead(ADDR_1));
 }
 
 void board_loop()
