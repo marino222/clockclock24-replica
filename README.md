@@ -176,6 +176,24 @@ The arrays are aligned with the holes in the front panel using the [`mounting_ai
 ![Clock arrays mounted to the frame](docs/images/clock_arrays_mounted.jpg)
 <p align="center"><em>Clock arrays mounted to the frame</em></p>
 
+
+After mounting everything, I noticed a visible air gap between the 3D-printed PCB mounts and the front plate. This comes from slightly bent 3D-printed parts. The front panel also has quite a bit of flex.
+![Gap between clock arrays and front panel](docs/images/clock_gap.jpg)
+<p align="center"><em>Gap between clock arrays and front panel</em></p>
+
+To fix this, I designed a clamp to press the PCB holders onto the front plate. I tried different solutions, but none gave satisfying results. In the end, I settled on 3D-printed clamps that are screwed onto the main frame and use a spring section to press the PCB holders against the front plate.
+
+![Section view of clamps](docs/images/clamp_section_view.png)
+<p align="center"><em>Section view of clamps</em></p>
+
+Because of build-volume restrictions on my 3D printer, each clamp consists of multiple parts that are screwed together. As a result, and because the 3D-printed springs are quite strong, the clamp bends slightly. This can be seen in the image below. The bending causes the clamp to sit slightly higher than the outer frame. As a result, when the clock is mounted on a wall, the outer frame is not fully flush because the clamps push the clock outward. I decided to treat this as a design feature: it protects the rest of the clock, and the gap between the frame and the wall allows a bit of airflow, which helps cool the microcontrollers.
+
+![Assembled clock with clamps](docs/images/clock_clamps.jpg)
+<p align="center"><em>Assembled clock with clamps</em></p>
+
+
+
+
 ---
 ### BOM
 
@@ -190,6 +208,12 @@ The arrays are aligned with the holes in the front panel using the [`mounting_ai
 | Screw Spacer (3D printed) | Raises PCBs slightly off the mounting brackets | 80 | Self-printed | [3D files README](3D%20files/README.md) |
 | Lower Hand (3D printed) | Hour clock hand | 24 | Self-printed | [3D files README](3D%20files/README.md) |
 | Upper Hand (3D printed) | Minute clock hand | 24 | Self-printed | [3D files README](3D%20files/README.md) |
+| Wall Mount (3D printed) | Wall mounting part | 2 | Self-printed | [3D files README](3D%20files/README.md) |
+| Outer Clamp (3D printed) | Outer clamp part | 5 | Self-printed | [3D files README](3D%20files/README.md) |
+| Middle Clamp (3D printed) | Middle clamp part | 3 | Self-printed | [3D files README](3D%20files/README.md) |
+| Y-Clamp (3D printed) | Y-clamp part | 1 | Self-printed | [3D files README](3D%20files/README.md) |
+| Leaf Spring (3D printed) | Spring element used in the clamp assembly | 9 | Self-printed | [3D files README](3D%20files/README.md) |
+| Edge Clamp (3D printed) | Edge clamp part for the right and left sides | 2 | Self-printed | [3D files README](3D%20files/README.md) |
 | Acrylic Front Panel | PERSPEX® Frost matte white acrylic, 900×400×5 mm | 1 | Imported from Germany | [expresszuschnitt.de](https://expresszuschnitt.de/) |
 | Main Frame Long | 20×45×900 mm wood beam | 2 | Hardware store | [Jumbo](https://www.jumbo.ch/de/bauen-renovieren/holz/leisten-staebe/rechteckleisten/oecoplan-dachlatte-gehobelt-20-x-45mm--1m/p/4974449) |
 | Main Frame Short | 20×45×400 mm wood beam | 2 | Hardware store | [Jumbo](https://www.jumbo.ch/de/bauen-renovieren/holz/leisten-staebe/rechteckleisten/oecoplan-dachlatte-gehobelt-20-x-45mm--1m/p/4974449) |

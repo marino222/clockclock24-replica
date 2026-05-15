@@ -23,6 +23,12 @@ All parts were printed on a BambuLab P1S using [Polymaker PolyTerra™ PLA Cotto
 | `upper_hand.stl` | Minute clock hand |
 | `standing_bracket.stl` | Add stands for a testing prototype (see video below) |
 | `distance_bracket.stl` | Connect PCBs to create a testing prototype (see video below) |
+| `clamp_spring.stl` | Leaf spring element for the clamp assembly |
+| `edge_clamp.stl` | Edge clamp for the right and left sides |
+| `middle_clamp.stl` | Middle clamp for the central mounting position |
+| `outer_clamp.stl` | Outer clamp for mounting positions near the frame edges |
+| `wall_mount.stl` | Wall mounting part |
+| `y_clamp.stl` | Y-clamp part used in the clamp assembly |
 
 ![Testing prototype](../docs/images/testing_prototype.gif)
 <p align="center"><em>Testing prototype in action</em></p>
