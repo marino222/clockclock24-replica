@@ -217,6 +217,7 @@ Because of build-volume restrictions on my 3D printer, each clamp consists of mu
 | Y-Clamp (3D printed) | Y-clamp part | 1 | Self-printed | [3D files README](3D%20files/README.md) |
 | Leaf Spring (3D printed) | Spring element used in the clamp assembly | 9 | Self-printed | [3D files README](3D%20files/README.md) |
 | Edge Clamp (3D printed) | Edge clamp part for the right and left sides | 2 | Self-printed | [3D files README](3D%20files/README.md) |
+| ESP32 mount (3D printed) | Mounting part for the ESP32 microcontroller | 1 | Self-printed | [3D files README](3D%20files/README.md) |
 | Acrylic Front Panel | PERSPEX® Frost matte white acrylic, 900×400×5 mm | 1 | Imported from Germany | [expresszuschnitt.de](https://expresszuschnitt.de/) |
 | Main Frame Long | 20×45×900 mm wood beam | 2 | Hardware store | [Jumbo](https://www.jumbo.ch/de/bauen-renovieren/holz/leisten-staebe/rechteckleisten/oecoplan-dachlatte-gehobelt-20-x-45mm--1m/p/4974449) |
 | Main Frame Short | 20×45×400 mm wood beam | 2 | Hardware store | [Jumbo](https://www.jumbo.ch/de/bauen-renovieren/holz/leisten-staebe/rechteckleisten/oecoplan-dachlatte-gehobelt-20-x-45mm--1m/p/4974449) |
@@ -254,11 +255,11 @@ The slave firmware runs on each of the eight Raspberry Pi Pico microcontrollers,
 - **I2C Communication**: Listens for commands from the ESP32 master via I2C protocol
 - **Motor Control**: Uses the AccelStepper library to provide smooth, accelerated motor movements with precise positioning
 - **Automatic Addressing**: Determines its I2C address automatically based on DIP switch configuration (see below)
-- **Calibration**: Supports motor homing sequences to establish reference positions for accurate timekeeping
+
 
 Each slave board operates independently once it receives position commands from the master, managing the acceleration profiles and step timing for its three motors in parallel.
 
-Each slave board (Raspberry Pi Pico) determines its I2C address automatically based on four DIP switch pins (ADDR_1 through ADDR_4) defined in [`board_config.h`](firmware/platformio/slave/include/board_config.h). The address is calculated in [`board.cpp`](firmware/platformio/slave/src/board.cpp) by reading the state of these pins, which use INPUT_PULLUP logic. When a DIP switch is ON (connected to ground), it represents a binary 1; when OFF (open/floating), it represents a binary 0.
+Each slave board (Raspberry Pi Pico) determines its I2C address automatically based on four DIP switch pins (ADDR_1 through ADDR_4) defined in [`board_config.h`](firmware/platformio/slave/include/board_config.h). The address is calculated in [`board.cpp`](firmware/platformio/slave/src/board.cpp) by reading the state of these pins, which use INPUT_PULLUP logic. When a DIP switch is ON (connected to ground), it represents a binary 1. When OFF (open/floating), it represents a binary 0.
 
 The master controller sends commands to each board sequentially using the formula `index + 1` as seen in [`clock_manger.cpp`](firmware/platformio/master/src/clock_manger.cpp), where index 0 corresponds to I2C address 1 (the leftmost board).
 
@@ -275,10 +276,7 @@ The master controller sends commands to each board sequentially using the formul
 | 7 | 0111 | 0 | 1 | 1 | 1 |
 | 8 | 1000 | 1 | 0 | 0 | 0 |
 
-![DIP Switch](docs/images/dip_switch.jpg)
-
-**Note:** The I2C address is calculated as `1 + binary value`. Each DIP switch state represents: **1** = switch ON (connected to GND), **0** = switch OFF (open/floating). The physical 4-position DIP switch is mounted in reverse order: physical DIP 1 (leftmost) is unused, physical DIP 2 corresponds to `DIP_SW_3` in the code (MSB, weight=4), physical DIP 3 to `DIP_SW_2` (weight=2), and physical DIP 4 (rightmost) to `DIP_SW_1` (LSB, weight=1).
-
+<p align="center"><img src="docs/images/dip_switch.jpg" alt="DIP Switch" width="300" /></p>
 
 
 ### Web Interface
