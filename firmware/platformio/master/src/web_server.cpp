@@ -66,7 +66,7 @@ void server_start()
   _server.on("/mode", HTTP_POST, handle_post_mode);
   _server.on("/sleep", HTTP_POST, handle_post_sleep);
   _server.on("/connection", HTTP_POST, handle_post_connection);
-  _server.on("/test", HTTP_POST, handle_post_test);
+  _server.on("/test/all", HTTP_POST, handle_post_test_all);
   _server.on("/update", HTTP_GET,  handle_ota_page);
   _server.on("/update", HTTP_POST, handle_ota_complete, handle_ota_upload);
   Serial.println("WebServer setup done");
@@ -217,81 +217,33 @@ t_browser_time get_browser_time()
   return _browser_time;
 }
 
-void handle_post_test()
+void handle_post_test_all()
 {
-  Serial.println("Handle POST /test");
-  
-  // Parameters:
-  // board: 0-7 (half-digit board index)
-  // clock: 0-2 (clock index on the board)
-  // angle_h: 0-359 (hour hand angle, optional)
-  // angle_m: 0-359 (minute hand angle, optional)
-  // speed: motor speed (optional, default uses global setting)
-  // accel: motor acceleration (optional, default uses global setting)
-  
-  if (!_server.hasArg("board") || !_server.hasArg("clock"))
+  Serial.println("Handle POST /test/all");
+
+  String hand = _server.hasArg("hand") ? _server.arg("hand") : "both";
+  int step_delay_ms = _server.hasArg("step_delay_ms") ? _server.arg("step_delay_ms").toInt() : 400;
+  int phase_delay_ms = _server.hasArg("phase_delay_ms") ? _server.arg("phase_delay_ms").toInt() : 3000;
+
+  bool test_hour = hand == "h" || hand == "hour" || hand == "both";
+  bool test_minute = hand == "m" || hand == "minute" || hand == "both";
+
+  if (!test_hour && !test_minute)
   {
-    _server.send(400, "text/plain", "Missing required parameters: board, clock");
+    _server.send(400, "text/plain", "hand must be h, m, hour, minute or both");
     return;
   }
-  
-  int board = _server.arg("board").toInt();
-  int clock = _server.arg("clock").toInt();
-  
-  // Validate parameters
-  if (board < 0 || board > 7)
-  {
-    _server.send(400, "text/plain", "board must be 0-7");
-    return;
-  }
-  
-  if (clock < 0 || clock > 2)
-  {
-    _server.send(400, "text/plain", "clock must be 0-2");
-    return;
-  }
-  
-  // Get current state or create new one
-  t_half_digitl lite_half = {0};
-  
-  // Set angles if provided
-  if (_server.hasArg("angle_h"))
-  {
-    int angle_h = _server.arg("angle_h").toInt();
-    lite_half.clocks[clock].angle_h = angle_h % 360;
-  }
-  
-  if (_server.hasArg("angle_m"))
-  {
-    int angle_m = _server.arg("angle_m").toInt();
-    lite_half.clocks[clock].angle_m = angle_m % 360;
-  }
-  
-  // Convert to full half digit
-  t_half_digit full_half = get_full_half_digit(lite_half);
-  
-  // Override speed/accel if provided
-  if (_server.hasArg("speed"))
-  {
-    int speed = _server.arg("speed").toInt();
-    full_half.clocks[clock].speed_h = speed;
-    full_half.clocks[clock].speed_m = speed;
-  }
-  
-  if (_server.hasArg("accel"))
-  {
-    int accel = _server.arg("accel").toInt();
-    full_half.clocks[clock].accel_h = accel;
-    full_half.clocks[clock].accel_m = accel;
-  }
-  
-  // Send command
-  send_half_digit(board, full_half);
-  
+
+  if (step_delay_ms < 0)
+    step_delay_ms = 0;
+  if (phase_delay_ms < 0)
+    phase_delay_ms = 0;
+
   _server.send(200, "text/plain", "OK");
-  
-  Serial.printf("Test motor - Board: %d, Clock: %d, Angle H: %d, Angle M: %d\n",
-    board, clock, full_half.clocks[clock].angle_h, full_half.clocks[clock].angle_m);
+  run_full_board_test(test_hour, test_minute, step_delay_ms, phase_delay_ms);
+
+  Serial.printf("Full-board test complete - hand=%s step_delay_ms=%d phase_delay_ms=%d\n",
+    hand.c_str(), step_delay_ms, phase_delay_ms);
 }
 
 void handle_ota_page()

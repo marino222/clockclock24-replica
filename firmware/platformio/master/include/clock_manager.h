@@ -114,4 +114,16 @@ t_full_clock get_clock_state_from_time(int h, int m);
 */
 void adjust_hands(int clock_index, int h_amount, int m_amount);
 
+/**
+ * Runs a full-board test locally on the controller.
+ * The clock is first moved into the known stop pose, then each selected hand
+ * performs exactly one full clockwise rotation and lands back in that pose.
+ *
+ * @param test_hour     whether to test hour hands
+ * @param test_minute   whether to test minute hands
+ * @param step_delay_ms pause between individual clock commands
+ * @param phase_delay_ms pause between hour and minute phases
+*/
+void run_full_board_test(bool test_hour, bool test_minute, int step_delay_ms, int phase_delay_ms);
+
 #endif

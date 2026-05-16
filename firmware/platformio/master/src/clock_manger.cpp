@@ -169,3 +169,82 @@ void adjust_hands(int clock_index, int h_amount, int m_amount)
   _counter++;
 }
 
+static void test_single_clock(int board, int clock,
+  bool has_angle_h, int angle_h,
+  bool has_angle_m, int angle_m,
+  bool has_mode, int mode,
+  bool has_speed, int speed,
+  bool has_accel, int accel)
+{
+  t_half_digit tmp = _last_state[board];
+  t_clock &target = tmp.clocks[clock];
+
+  if (has_angle_h)
+  {
+    target.angle_h = ((angle_h % 360) + 360) % 360;
+    if (has_mode)
+      target.mode_h = mode;
+    if (has_speed)
+      target.speed_h = speed;
+    if (has_accel)
+      target.accel_h = accel;
+  }
+
+  if (has_angle_m)
+  {
+    target.angle_m = ((angle_m % 360) + 360) % 360;
+    if (has_mode)
+      target.mode_m = mode;
+    if (has_speed)
+      target.speed_m = speed;
+    if (has_accel)
+      target.accel_m = accel;
+  }
+
+  tmp.change_counter[clock] = _counter;
+  send_half_digit(board, tmp);
+  _last_state[board] = tmp;
+  _counter++;
+}
+
+void run_full_board_test(bool test_hour, bool test_minute, int step_delay_ms, int phase_delay_ms)
+{
+  if (!test_hour && !test_minute)
+    return;
+
+  set_direction(MIN_DISTANCE);
+  set_speed(200);
+  set_acceleration(100);
+  set_clock(d_stop);
+  delay(1500);
+
+  auto run_phase = [&](bool is_hour)
+  {
+    const int rest_angle = 270;
+
+    for (int board = 0; board < 8; board++)
+    {
+      for (int clock = 0; clock < 3; clock++)
+      {
+        test_single_clock(
+          board, clock,
+          is_hour, rest_angle,
+          !is_hour, rest_angle,
+          true, CLOCKWISE2,
+          false, 0,
+          false, 0);
+        delay(step_delay_ms);
+      }
+    }
+  };
+
+  if (test_hour)
+    run_phase(true);
+
+  if (test_hour && test_minute)
+    delay(phase_delay_ms);
+
+  if (test_minute)
+    run_phase(false);
+}
+

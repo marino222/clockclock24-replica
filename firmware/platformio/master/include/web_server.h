@@ -69,9 +69,9 @@ void handle_post_sleep();
 void handle_post_connection();
 
 /**
- * Handles POST /test
-*/
-void handle_post_test();
+ * Handles POST /test/all
+ */
+void handle_post_test_all();
 
 /**
  * Check if an OTA update is currently in progress
