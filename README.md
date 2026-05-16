@@ -176,6 +176,9 @@ The arrays are aligned with the holes in the front panel using the [`mounting_ai
 ![Clock arrays mounted to the frame](docs/images/clock_arrays_mounted.jpg)
 <p align="center"><em>Clock arrays mounted to the frame</em></p>
 
+---
+
+#### Clamps
 
 After mounting everything, I noticed a visible air gap between the 3D-printed PCB mounts and the front plate. This comes from slightly bent 3D-printed parts. The front panel also has quite a bit of flex.
 ![Gap between clock arrays and front panel](docs/images/clock_gap.jpg)

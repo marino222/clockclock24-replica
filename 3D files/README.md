@@ -29,6 +29,7 @@ All parts were printed on a BambuLab P1S using [Polymaker PolyTerra™ PLA Cotto
 | `outer_clamp.stl` | Outer clamp for mounting positions near the frame edges |
 | `wall_mount.stl` | Wall mounting part |
 | `y_clamp.stl` | Y-clamp part used in the clamp assembly |
+| `esp32_mount.stl` | Part to mount the ESP32 main controller |
 
 ![Testing prototype](../docs/images/testing_prototype.gif)
 <p align="center"><em>Testing prototype in action</em></p>
