@@ -1,14 +1,63 @@
 #include "web_server.h"
+#include "ota_page.h"
+#include <Update.h>
+#include <mbedtls/base64.h>
 
 WebServer _server(80);
 
 t_browser_time _browser_time = {0, 0, 0, 0, 0, 0};
 bool _time_changed_browser = false;
+static volatile bool _ota_in_progress = false;
+static bool _ota_auth_ok = false;
+
+bool is_ota_in_progress()
+{
+  return _ota_in_progress;
+}
+
+/**
+ * Validates the Authorization header against the stored OTA password.
+ * Returns true if credentials are valid, false otherwise (does not send a response).
+ */
+static bool check_auth_header()
+{
+  if (!_server.hasHeader("Authorization"))
+    return false;
+
+  String auth = _server.header("Authorization");
+  if (!auth.startsWith("Basic "))
+    return false;
+
+  String encoded = auth.substring(6);
+  size_t decoded_len = 0;
+  unsigned char decoded[128] = {0};
+  mbedtls_base64_decode(decoded, sizeof(decoded) - 1, &decoded_len,
+    (const unsigned char *)encoded.c_str(), encoded.length());
+  decoded[decoded_len] = '\0';
+
+  // decoded is "username:password"; we only check the password part
+  String decoded_str = String((char *)decoded);
+  int colon = decoded_str.indexOf(':');
+  String supplied_password = (colon >= 0) ? decoded_str.substring(colon + 1) : decoded_str;
+
+  return supplied_password == String(get_ota_password());
+}
+
+/**
+ * Sends 401 Unauthorized with WWW-Authenticate challenge.
+ */
+static void send_unauthorized()
+{
+  _server.sendHeader("WWW-Authenticate", "Basic realm=\"ClockClock OTA\"");
+  _server.send(401, "text/plain", "Authentication required");
+}
 
 void server_start()
 {
   // Setup web server connection
   _server.enableCORS(true);
+  const char* collected_headers[] = {"Authorization"};
+  _server.collectHeaders(collected_headers, 1);
   _server.begin();
   _server.on("/", HTTP_GET, handle_get);
   _server.on("/config", HTTP_GET, handle_get_config);
@@ -18,6 +67,8 @@ void server_start()
   _server.on("/sleep", HTTP_POST, handle_post_sleep);
   _server.on("/connection", HTTP_POST, handle_post_connection);
   _server.on("/test", HTTP_POST, handle_post_test);
+  _server.on("/update", HTTP_GET,  handle_ota_page);
+  _server.on("/update", HTTP_POST, handle_ota_complete, handle_ota_upload);
   Serial.println("WebServer setup done");
 }
 
@@ -241,4 +292,80 @@ void handle_post_test()
   
   Serial.printf("Test motor - Board: %d, Clock: %d, Angle H: %d, Angle M: %d\n",
     board, clock, full_half.clocks[clock].angle_h, full_half.clocks[clock].angle_m);
+}
+
+void handle_ota_page()
+{
+  if (get_connection_mode() != EXT_CONN)
+  {
+    _server.send(403, "text/plain", "OTA is only available in external WiFi mode");
+    return;
+  }
+  if (!check_auth_header())
+  {
+    send_unauthorized();
+    return;
+  }
+
+  _server.send(200, "text/html", OTA_PAGE);
+}
+
+void handle_ota_upload()
+{
+  HTTPUpload &upload = _server.upload();
+
+  if (upload.status == UPLOAD_FILE_START)
+  {
+    _ota_auth_ok = (get_connection_mode() == EXT_CONN) && check_auth_header();
+    if (!_ota_auth_ok)
+    {
+      Serial.println("OTA upload rejected: unauthorized or wrong mode");
+      return;
+    }
+
+    _ota_in_progress = true;
+    Serial.printf("OTA upload started: %s\n", upload.filename.c_str());
+    if (!Update.begin(UPDATE_SIZE_UNKNOWN))
+      Serial.printf("OTA begin failed: %s\n", Update.errorString());
+  }
+  else if (upload.status == UPLOAD_FILE_WRITE)
+  {
+    if (!_ota_auth_ok) return;
+    if (Update.write(upload.buf, upload.currentSize) != upload.currentSize)
+      Serial.printf("OTA write failed: %s\n", Update.errorString());
+  }
+  else if (upload.status == UPLOAD_FILE_END)
+  {
+    if (_ota_auth_ok)
+    {
+      if (Update.end(true))
+        Serial.printf("OTA upload complete: %u bytes\n", upload.totalSize);
+      else
+        Serial.printf("OTA end failed: %s\n", Update.errorString());
+    }
+    _ota_in_progress = false;
+  }
+}
+
+void handle_ota_complete()
+{
+  if (!_ota_auth_ok)
+  {
+    send_unauthorized();
+    return;
+  }
+
+  if (Update.hasError())
+  {
+    _server.send(500, "text/plain",
+      String("Update failed: ") + String(Update.errorString()));
+    Serial.printf("OTA failed: %s\n", Update.errorString());
+  }
+  else
+  {
+    _server.send(200, "text/plain", "Update successful! Rebooting...");
+    Serial.println("OTA successful, rebooting");
+    delay(500);
+    ESP.restart();
+  }
 }

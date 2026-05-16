@@ -55,11 +55,8 @@ void _delay(int value);
 void i2c_scan();
 
 void setup() {
-  Serial.begin(11520  _i2c_address = !digitalRead(ADDR_1) + 
-                 (!digitalRead(ADDR_2) << 1) + 
-                 (!digitalRead(ADDR_3) << 2) + 
-                 (!digitalRead(ADDR_4) << 3);0);
-  Serial.println("\nclockclock24 replica by Vallasc master v1.0");
+  Serial.begin(115200);
+  Serial.println("\nClockClock24 by marino222");
   delay(3000);
   // Load configuration from EEPROM
   begin_config();
@@ -69,11 +66,11 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   if(get_connection_mode() == HOTSPOT)
-    wifi_create_AP("ClockClock 24", "clockclock24");
-  else if( !wifi_connect(get_ssid(), get_password(), "clockclock24") )
+    wifi_create_AP("ClockClock 24", "clock");
+  else if( !wifi_connect(get_ssid(), get_password(), "clock") )
   {
     set_connection_mode(HOTSPOT);
-    wifi_create_AP("ClockClock 24", "clockclock24");
+    wifi_create_AP("ClockClock 24", "clock");
   }
 
   if(get_connection_mode() == EXT_CONN)
@@ -90,6 +87,11 @@ void setup() {
 }
 
 void loop() {
+
+  update_MDNS();
+  handle_webclient();
+
+  if (is_ota_in_progress()) return;
 
   if(get_connection_mode() == HOTSPOT && is_time_changed_browser())
   {
@@ -109,9 +111,6 @@ void loop() {
   }
 
   get_clock_mode() != OFF ? set_time() : stop();
-
-  update_MDNS();
-  handle_webclient();
 
   if (millis() - last_i2c_scan_ms >= I2C_SCAN_INTERVAL_MS)
   {
@@ -217,6 +216,7 @@ void _delay(int value)
   {
     update_MDNS();
     handle_webclient();
+    if (is_ota_in_progress()) return;
     delay(value/100);
   }
 }

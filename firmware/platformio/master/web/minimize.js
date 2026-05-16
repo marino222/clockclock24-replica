@@ -1,10 +1,10 @@
 import { minify } from 'html-minifier';
 import fs from 'fs';
 
-try {
-    console.log('Minimizing ./index.html');
-    const data = fs.readFileSync('./index.html', 'utf8');
-    let result = minify(data, {
+function processPage(inputFile, outputFile, macroName, headerGuard) {
+    console.log(`Minimizing ${inputFile}`);
+    const data = fs.readFileSync(inputFile, 'utf8');
+    const result = minify(data, {
         removeAttributeQuotes: true,
         collapseWhitespace: true,
         removeComments: true,
@@ -16,16 +16,20 @@ try {
         minifyCSS: true,
         minifyJS: true
     });
-    //fs.writeFileSync('./index.min.html', result);
 
-    const page_h = 
-`#ifndef WEB_PAGE_H
-#define WEB_PAGE_H
-#define WEB_PAGE "${result.replaceAll(`"`, `\\"`)}"
+    const header =
+`#ifndef ${headerGuard}
+#define ${headerGuard}
+#define ${macroName} "${result.replaceAll(`"`, `\\"`)}"
 #endif`
 
-    fs.writeFileSync('../include/web_page.h', page_h);
-    console.log('Generated ../include/web_page.h');
+    fs.writeFileSync(outputFile, header);
+    console.log(`Generated ${outputFile}`);
+}
+
+try {
+    processPage('./index.html',  '../include/web_page.h', 'WEB_PAGE', 'WEB_PAGE_H');
+    processPage('./update.html', '../include/ota_page.h', 'OTA_PAGE', 'OTA_PAGE_H');
 } catch (err) {
     console.error(err);
 }

@@ -113,4 +113,15 @@ void set_ssid(const char *value);
  */
 void set_password(const char *value);
 
+/**
+ *  Gets OTA update password
+ */
+const char *get_ota_password();
+
+/**
+ *  Sets OTA update password
+ * @param value   OTA password string
+ */
+void set_ota_password(const char *value);
+
 #endif

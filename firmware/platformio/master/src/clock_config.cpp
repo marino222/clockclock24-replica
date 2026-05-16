@@ -11,6 +11,7 @@ int _clock_timezone;
 int _wireless_mode;
 char _ssid[64];
 char _password[64];
+char _ota_password[64];
 
 void begin_config()
 {
@@ -20,6 +21,7 @@ void begin_config()
   _clock_timezone = prefs.getInt("clock_timezone", 0);
   strncpy(_ssid, prefs.getString("ssid", "").c_str(), sizeof(_ssid));
   strncpy(_password, prefs.getString("password", "").c_str(), sizeof(_password));
+  strncpy(_ota_password, prefs.getString("ota_password", "clockclock24").c_str(), sizeof(_ota_password));
   if(prefs.isKey("sleep_time"))
     prefs.getBytes("sleep_time", _sleep_time, sizeof(_sleep_time));
   else
@@ -109,4 +111,15 @@ void set_password(const char *value)
 {
   strncpy(_password, value, sizeof(_password));
   prefs.putString("password", value);
+}
+
+const char *get_ota_password()
+{
+  return _ota_password;
+}
+
+void set_ota_password(const char *value)
+{
+  strncpy(_ota_password, value, sizeof(_ota_password));
+  prefs.putString("ota_password", value);
 }

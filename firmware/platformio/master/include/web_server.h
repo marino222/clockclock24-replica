@@ -74,6 +74,27 @@ void handle_post_connection();
 void handle_post_test();
 
 /**
+ * Check if an OTA update is currently in progress
+ * @return true while an OTA firmware upload is being processed
+*/
+bool is_ota_in_progress();
+
+/**
+ * Handles GET /update — serves the OTA firmware upload page (EXT_CONN mode only)
+*/
+void handle_ota_page();
+
+/**
+ * Handles POST /update response — sends result and reboots on success
+*/
+void handle_ota_complete();
+
+/**
+ * Handles POST /update file upload stream (called per-chunk by WebServer)
+*/
+void handle_ota_upload();
+
+/**
  * Check if the client changed the time
  * @return true if the client makes a request, false otherwise
 */

@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>ClockClock 24 (replica)</title>
+  <title>ClockClock 24</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 490 490'%3E%3Cstyle xmlns='http://www.w3.org/2000/svg'%3E %23fav %7B stroke: %23000; fill: %23000; %7D @media (prefers-color-scheme: dark) %7B %23fav %7B stroke: %23fff; fill: %23fff; %7D %7D %3C/style%3E%3Cg id='fav'%3E%3Cg%3E%3Cpath d='M233.004,0C104.224,0,0,104.212,0,233.004c0,128.781,104.212,233.004,233.004,233.004 c128.782,0,233.004-104.212,233.004-233.004C466.008,104.222,361.796,0,233.004,0z M244.484,242.659l-63.512,75.511 c-5.333,6.34-14.797,7.156-21.135,1.824c-6.34-5.333-7.157-14.795-1.824-21.135l59.991-71.325V58.028c0-8.284,6.716-15,15-15 s15,6.716,15,15v174.976h0C248.004,236.536,246.757,239.956,244.484,242.659z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E" type="image/svg+xml" />
   <style>
 
@@ -36,6 +36,47 @@
     .text {
       margin-bottom: 8px;
       text-align: center;
+    }
+
+    .footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .footer-main-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border: 1px solid #5a5a5a;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .footer-main-link:hover {
+      background-color: #b4b4b44b;
+      color: #fff;
+    }
+
+    .footer-main-link svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .footer-credits {
+      color: #c7c7c7;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .footer-credits p {
+      margin: 0;
     }
     
     a {
@@ -243,7 +284,7 @@
 </head>
 <body id="body">
 <div class="spacer"></div>
-<h1>ClockClock 24 (replica)</h1>
+<h1>ClockClock 24</h1>
 <div id="art"></div>
 <div class="spacer"></div>
 <div class="title">
@@ -271,10 +312,20 @@
 </form>
 <div class="spacer"></div>
 <div class="spacer"></div>
-<div class="text"> 
-  <p><small>Code</small><br/><a href="http://www.vallasc.github.com/">Giacomo Vallorani</a></p>
-  <p><small>Clock animation</small><br/><a href="https://manu.ninja/">Manuel Wieser</a></p>
-  <p><small>Design</small><br/><a href="http://www.humanssince1982.com/">Humans since 1982</a></p>
+<div class="footer">
+  <a class="footer-main-link" href="https://github.com/marino222/clockclock24-replica" target="_blank" rel="noopener noreferrer" aria-label="Project documentation on GitHub">
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
+    </svg>
+    Documentation
+  </a>
+  <div class="footer-credits">
+    <p><strong>Credits</strong></p>
+    <p>Code: <a href="http://www.vallasc.github.com/">Giacomo Vallorani</a></p>
+    <p>Clock animation: <a href="https://manu.ninja/">Manuel Wieser</a></p>
+    <p>Design: <a href="http://www.humanssince1982.com/">Humans since 1982</a></p>
+    <p><a href="/update">Firmware Update</a></p>
+  </div>
 </div>
 <script>
   // Hours when the clock remains off

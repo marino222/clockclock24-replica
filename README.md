@@ -291,7 +291,7 @@ The web interface provides an intuitive control panel for the ClockClock 24, bui
 
 To access the web interface, connect to the same WiFi network as the ESP32 and navigate to its IP address in any web browser. The interface is responsive and works on both desktop and mobile devices.
 
-For detailed build and upload instructions, see the [firmware README](firmware/README.md).
+For more information about the firmware, see the [firmware README](firmware/README.md).
 
 
 
