@@ -295,11 +295,31 @@ To access the web interface, connect to the same WiFi network as the ESP32 and n
 
 For detailed build and upload instructions, see the [firmware README](firmware/README.md).
 
----
 
-## How to get started
 
----
 
 ## Credits
+
+### Design — Humans Since 1982
+
+**ClockClock 24 is an original kinetic art piece created by [Humans Since 1982](https://www.humanssince1982.com/).** All design rights, intellectual property, and artistic authorship of the ClockClock concept belong exclusively to them. This project is a non-commercial personal replica built out of admiration for their work. I make no claim to the design, the concept, or any related intellectual property.u are considering a similar project, please be aware of this and respect their rights.
+
+---
+
+### Reference Implementation — Vallasc
+
+The firmware and PCB design of this project are largely based on the work of [Vallasc](https://github.com/Vallasc/clockclock24-replica). His open-source replica served as the primary reference for the software architecture, I2C communication protocol, clock logic, and overall system design. Without his work this project would have taken significantly longer to build.
+
+---
+
+### Motor Driver PCB — doctek
+
+The motor driver breakout board design is taken from the [Stepper Driver for Dashpanel Instruments](https://hackaday.io/project/187630-stepper-driver-for-dashpanel-instruments) project by [doctek](https://hackaday.io/doctek) on Hackaday.io. The board was used without modifications. The `SpeedoDriveTest.ino` test sketch is also taken from that project.
+
+
+---
+
+### This Project
+
+This repository is released under the [GNU General Public License v3.0](LICENSE). You are free to use, modify, and distribute it under the same terms, but **the design concept of ClockClock 24 remains the exclusive property of Humans Since 1982** and this license does not grant any rights to it.
 
