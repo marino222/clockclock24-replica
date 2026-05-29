@@ -5,6 +5,8 @@ Preferences prefs;
 
 // Internal config state
 int _clock_mode;
+int _clock_animation;
+int _cycle_type;
 bool _sleep_time[7 * 24];
 int _clock_timezone;
 
@@ -16,7 +18,9 @@ char _ota_password[64];
 void begin_config()
 {
   prefs.begin("clockclock24");
-  _clock_mode = prefs.getInt("clock_mode", LAZY);
+  _clock_mode = prefs.getInt("mode2", LAZY);
+  _clock_animation = prefs.getInt("anim", WAVE);
+  _cycle_type = prefs.getInt("cycle", SEQUENTIAL);
   _wireless_mode = prefs.getInt("wireless_mode", HOTSPOT);
   _clock_timezone = prefs.getInt("clock_timezone", 0);
   strncpy(_ssid, prefs.getString("ssid", "").c_str(), sizeof(_ssid));
@@ -37,6 +41,8 @@ void clear_config()
 {
   prefs.clear();
   _clock_mode = LAZY;
+  _clock_animation = WAVE;
+  _cycle_type = SEQUENTIAL;
   _wireless_mode = HOTSPOT;
   strncpy(_ssid, "", sizeof(_ssid));
   strncpy(_password, "", sizeof(_password));
@@ -46,6 +52,16 @@ void clear_config()
 int get_clock_mode()
 {
   return _clock_mode;
+}
+
+int get_clock_animation()
+{
+  return _clock_animation;
+}
+
+int get_cycle_type()
+{
+  return _cycle_type;
 }
 
 bool get_sleep_time(int day, int hour)
@@ -76,7 +92,19 @@ char *get_password()
 void set_clock_mode(int value)
 {
   _clock_mode = value;
-  prefs.putInt("clock_mode", value);
+  prefs.putInt("mode2", value);
+}
+
+void set_clock_animation(int value)
+{
+  _clock_animation = value;
+  prefs.putInt("anim", value);
+}
+
+void set_cycle_type(int value)
+{
+  _cycle_type = value;
+  prefs.putInt("cycle", value);
 }
 
 void set_sleep_time(int day, int hour, bool value)

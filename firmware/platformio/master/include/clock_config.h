@@ -12,15 +12,35 @@ enum wireless_modes
   EXT_CONN
 };
 
-/** 
- * Clock animation's modes
+/**
+ * Clock operational modes
  */
 enum clock_modes
 {
-  LAZY,
-  FUN,
-  WAVES,
-  OFF
+  OFF = 0,
+  LAZY = 1,
+  ANIMATED = 2
+};
+
+/**
+ * Clock animation types (used when mode is ANIMATED)
+ */
+enum clock_animations
+{
+  WAVE = 0,
+  FUN = 1,
+  CIRCLE = 2,
+  SPIRAL = 3,
+  CYCLE = 4
+};
+
+/**
+ * Cycle order (used when animation is CYCLE)
+ */
+enum cycle_types
+{
+  SEQUENTIAL = 0,
+  RANDOM_ORDER = 1
 };
 
 /**
@@ -42,6 +62,16 @@ void end_config();
  * Get current clock mode
  */
 int get_clock_mode();
+
+/**
+ * Get current animation (used when mode is ANIMATED)
+ */
+int get_clock_animation();
+
+/**
+ * Get current cycle type (SEQUENTIAL or RANDOM_ORDER)
+ */
+int get_cycle_type();
 
 /**
  * Gets current sleep time at a given day and hour
@@ -75,6 +105,18 @@ char *get_password();
  * @param value   mode value of type clock_modes
  */
 void set_clock_mode(int value);
+
+/**
+ * Sets animation type (used when mode is ANIMATED)
+ * @param value   animation value of type clock_animations
+ */
+void set_clock_animation(int value);
+
+/**
+ * Sets cycle type
+ * @param value   cycle type value of type cycle_types
+ */
+void set_cycle_type(int value);
 
 /**
  *  Sets current sleep time at a given day and hour

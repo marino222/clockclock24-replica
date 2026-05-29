@@ -92,12 +92,19 @@ void set_digit(int index, t_digit digit);
 */
 void set_half_digit(int index, t_half_digitl half);
 
-/** 
+/**
  * Sets the specified time on the clock
  * @param h     hour
  * @param m     minute
 */
 void set_clock_time(int h, int m);
+
+/**
+ * Sets all 24 clocks with per-clock angle pairs using a shared speed/accel/direction.
+ * angles[i] = {hour_hand_angle, minute_hand_angle} for clock i (0-23).
+ * Clock order: digit 0 half 0 clocks 0-2, digit 0 half 1 clocks 0-2, ..., digit 3 half 1 clocks 0-2.
+ */
+void set_custom_clock(const uint16_t angles[24][2], int speed, int accel, int direction);
 
 /** 
  * Returns a full clock state from time

@@ -15,6 +15,7 @@
 int last_hour = -1;
 int last_minute = -1;
 bool is_stopped = false;
+int current_cycle_index = 0;
 
 #define I2C_SCAN_INTERVAL_MS 5000
 unsigned long last_i2c_scan_ms = 0;
@@ -31,6 +32,16 @@ constexpr uint8_t I2C_LAST_SLAVE_ADDR = 0x0F;
 void set_time();
 
 /**
+ * Dispatches to the selected animation when in ANIMATED mode
+*/
+void set_animated();
+
+/**
+ * Advances the cycle index and returns the next animation to play
+*/
+int advance_cycle();
+
+/**
  * Sets clock time using lazy animation
 */
 void set_lazy();
@@ -44,6 +55,16 @@ void set_fun();
  * Sets clock time using waves animation
 */
 void set_waves();
+
+/**
+ * Sets clock time using circle animation (synchronized spinning discs)
+*/
+void set_circle();
+
+/**
+ * Sets clock time using spiral animation (diagonal wave sweep)
+*/
+void set_spiral();
 
 /**
  * Sets clock to stop state
@@ -157,14 +178,40 @@ void set_time()
       case LAZY:
         set_lazy();
         break;
-      case FUN:
-        set_fun();
-        break;
-      case WAVES:
-        set_waves();
+      case ANIMATED:
+        set_animated();
         break;
     }
   }
+}
+
+void set_animated()
+{
+  int anim = get_clock_animation();
+  if (anim == CYCLE)
+    anim = advance_cycle();
+  switch(anim)
+  {
+    case WAVE:   set_waves();  break;
+    case FUN:    set_fun();    break;
+    case CIRCLE: set_circle(); break;
+    case SPIRAL: set_spiral(); break;
+  }
+}
+
+int advance_cycle()
+{
+  int anim;
+  if (get_cycle_type() == RANDOM_ORDER)
+  {
+    anim = random(0, 4);
+  }
+  else
+  {
+    anim = current_cycle_index;
+    current_cycle_index = (current_cycle_index + 1) % 4;
+  }
+  return anim;
 }
 
 void set_lazy()
@@ -181,6 +228,54 @@ void set_fun()
   set_acceleration(150);
   set_direction(CLOCKWISE2);
   set_clock_time(last_hour, last_minute);
+}
+
+void set_circle()
+{
+  // Phase 1+2: all 24 clocks snap to 0°/180° disc formation then spin 3 full rotations
+  uint16_t disc[24][2];
+  for (int i = 0; i < 24; i++) { disc[i][0] = 0; disc[i][1] = 180; }
+  set_custom_clock(disc, 800, 150, CLOCKWISE3);
+  _delay(14000);
+
+  // Phase 3: settle to time
+  set_speed(400);
+  set_acceleration(150);
+  set_direction(MIN_DISTANCE);
+  set_clock_time(last_hour, last_minute);
+}
+
+void set_spiral()
+{
+  // Phase 1: reset to IIII pattern
+  set_speed(800);
+  set_acceleration(150);
+  set_direction(MIN_DISTANCE);
+  set_clock(d_IIII);
+  _delay(5000);
+
+  // Phase 2: diagonal wave — each column (half-digit) offset by 45 degrees
+  uint16_t wave[24][2];
+  for (int i = 0; i < 24; i++)
+  {
+    int col = i / 3;  // half-digit index 0-7 = column
+    uint16_t angle = (col * 45) % 360;
+    wave[i][0] = angle;
+    wave[i][1] = angle;
+  }
+  set_custom_clock(wave, 600, 100, MIN_DISTANCE);
+  _delay(5000);
+
+  // Phase 3: cascade half-digits to time
+  set_speed(400);
+  set_acceleration(100);
+  set_direction(CLOCKWISE2);
+  t_full_clock clock = get_clock_state_from_time(last_hour, last_minute);
+  for (int i = 0; i < 8; i++)
+  {
+    set_half_digit(i, clock.digit[i/2].halfs[i%2]);
+    delay(400);
+  }
 }
 
 void set_waves()

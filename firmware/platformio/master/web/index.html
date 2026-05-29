@@ -123,8 +123,16 @@
     .hidden .btn-clock {
       display: none;
     }
-    
+
     #external.hidden {
+      display: none;
+    }
+
+    #animation-section.hidden {
+      display: none;
+    }
+
+    #cycle-options.hidden {
       display: none;
     }
     
@@ -291,6 +299,12 @@
   Mode
 </div>
 <div id="modes"></div>
+<div id="animation-section" class="hidden">
+  <div class="spacer"></div>
+  <div class="title">Animation</div>
+  <div id="animations"></div>
+  <div id="cycle-options" class="hidden"></div>
+</div>
 <div class="spacer"></div>
 <div class="title">
   Sleep Time
@@ -337,9 +351,15 @@
               Array(24).fill(0), 
               Array(24).fill(0)]
 
-  // Current selected animation mode
+  // Current selected mode (0=OFF, 1=LAZY, 2=ANIMATED)
   let selectedMode = 0
-  // Current selected mode
+  // Current selected animation (0=WAVE, 1=FUN, 2=CIRCLE, 3=SPIRAL, 4=CYCLE)
+  let selectedAnimation = 0
+  // Current cycle type (0=SEQUENTIAL, 1=RANDOM)
+  let selectedCycleType = 0
+  // Cycle position, mirrors firmware state
+  let currentCycleIndex = 0
+  // Current selected clock
   let selectedClock = undefined
   // Current selected day
   let selectedDay = undefined
@@ -356,14 +376,39 @@
     return `<div id="clock-${index}" class="clock-box hidden"><svg class="clock clock--${index}" width="100" height="100" viewBox="0 0 100 100" onclick="selectClock(${index})"><path class="clock-smallHand" d="M50,47 C48.3431458,47 47,48.3431458 47,50 C47,51.6568542 48.3431458,53 50,53 L95,53 L95,47 L50,47 Z" stroke="none" fill="#FFF" fill-rule="evenodd"></path><path class="clock-largeHand" d="M50,47 C48.3431458,47 47,48.3431458 47,50 C47,51.6568542 48.3431458,53 50,53 L100,53 L100,47 L50,47 Z" stroke="none" fill="#FFF" fill-rule="evenodd"></path></svg><div class="btn-clock btn-clock-tl" onclick="adjustHand(${index}, 0, 1)">H+</div><div class="btn-clock btn-clock-tr" onclick="adjustHand(${index}, 1, 0)">M+</div><div class="btn-clock btn-clock-bl" onclick="adjustHand(${index}, 0, -1)">H-</div><div class="btn-clock btn-clock-br" onclick="adjustHand(${index}, -1, 0)">M-</div></div>`
   }
 
-  // Makes modes buttons 
+  // Makes mode buttons (OFF, LAZY, ANIMATED)
   function genModes() {
-    let modes = ["LAZY", "FUN", "WAVES", "OFF"]
+    let modes = ["OFF", "LAZY", "ANIMATED"]
     let html = ""
     let i = 0
     for (let m of modes)
       html += `<div id="mode-${i}" class="btn ${i === selectedMode ? "active" : ""}" onclick="selectMode(${i++})">${m}</div>`
     document.getElementById("modes").innerHTML = html
+  }
+
+  // Makes animation buttons (WAVE, FUN, CIRCLE, SPIRAL, CYCLE)
+  function genAnimations() {
+    let anims = ["WAVE", "FUN", "CIRCLE", "SPIRAL", "CYCLE"]
+    let html = ""
+    let i = 0
+    for (let a of anims)
+      html += `<div id="anim-${i}" class="btn ${i === selectedAnimation ? "active" : ""}" onclick="selectAnimation(${i++})">${a}</div>`
+    document.getElementById("animations").innerHTML = html
+    genCycleOptions()
+  }
+
+  // Makes cycle type buttons (SEQ, RAND) — visible only when CYCLE animation is active
+  function genCycleOptions() {
+    let types = ["SEQ", "RAND"]
+    let html = ""
+    let i = 0
+    for (let t of types)
+      html += `<div id="cycle-${i}" class="btn ${i === selectedCycleType ? "active" : ""}" onclick="selectCycleType(${i++})">${t}</div>`
+    document.getElementById("cycle-options").innerHTML = html
+    if (selectedAnimation === 4)
+      document.getElementById("cycle-options").classList.remove("hidden")
+    else
+      document.getElementById("cycle-options").classList.add("hidden")
   }
 
   // Makes the full clock
@@ -410,12 +455,36 @@
 
   // Called on buttons clicks to select the mode
   function selectMode(mode) {
-    mode === 3 ? stopClock() : startClock()
+    mode === 0 ? stopClock() : startClock()
     if(selectedMode !== undefined)
       document.getElementById("mode-" + selectedMode).classList.remove("active")
     selectedMode = mode
     document.getElementById("mode-" + selectedMode).classList.add("active")
+    if (mode === 2)
+      document.getElementById("animation-section").classList.remove("hidden")
+    else
+      document.getElementById("animation-section").classList.add("hidden")
     saveMode(selectedMode)
+  }
+
+  // Called on animation button click
+  function selectAnimation(anim) {
+    if(selectedAnimation !== undefined)
+      document.getElementById("anim-" + selectedAnimation).classList.remove("active")
+    selectedAnimation = anim
+    document.getElementById("anim-" + selectedAnimation).classList.add("active")
+    currentCycleIndex = 0
+    genCycleOptions()
+    saveAnimation(selectedAnimation, selectedCycleType)
+  }
+
+  // Called on cycle type button click (SEQ / RAND)
+  function selectCycleType(type) {
+    if(selectedCycleType !== undefined)
+      document.getElementById("cycle-" + selectedCycleType).classList.remove("active")
+    selectedCycleType = type
+    document.getElementById("cycle-" + selectedCycleType).classList.add("active")
+    saveAnimation(selectedAnimation, selectedCycleType)
   }
 
   // Called on buttons clicks to select the day
@@ -491,6 +560,7 @@
   // Makes all the HTML elements
   genClocks()
   genModes()
+  genAnimations()
   genDays()
 
   /* Server calls */
@@ -521,6 +591,11 @@
     sleep = res.sleep_time
     if(selectedDay !== undefined)
       genHours(selectedDay)
+    if (res.clock_animation !== undefined) {
+      selectedAnimation = res.clock_animation
+      selectedCycleType = res.cycle_type || 0
+      genAnimations()
+    }
     selectMode(res.clock_mode)
     selectConnection(res.wireless_mode)
     document.getElementById("ssid").value = ssid = res.ssid
@@ -544,6 +619,17 @@
     let f = new FormData()
     f.append("mode", mode.toString())
     fetch("/mode", {
+      method: "post",
+      body: f,
+    })
+  }
+
+  // Sends a request to save the animation and cycle type
+  function saveAnimation(anim, cycleType) {
+    let f = new FormData()
+    f.append("animation", anim.toString())
+    f.append("cycle_type", cycleType.toString())
+    fetch("/animation", {
       method: "post",
       body: f,
     })
@@ -834,9 +920,129 @@
       }, 7000 + 9000 + 400 *(i*2 + 1))
   }
 
+// Sets time with keyframed circle animation (Mirrored, Delayed, 4x Rotations)
+  function setCircle(time) {
+    // --- 1. CONFIGURATION ---
+    
+    // Static start positions for ONE HALF (4 columns, 3 rows)
+    // Replace [0, 0] with your visually perfect starting angles [hour, minute]
+    const halfPositions = [
+      [ [70, 290], [85, 275], [70, 290] ], // Col 0 (Outer edge left/right)
+      [ [60, 300], [80, 280], [60, 300] ], // Col 1
+      [ [45, 315], [75, 285], [45, 315] ], // Col 2
+      [ [20, 340], [50, 310], [20, 340] ]  // Col 3 (Inner center)
+    ];
+
+    // Delays for the ripple effect (in milliseconds)
+    // Inner hands start first (0ms), outer hands are delayed.
+    const halfDelays = [
+      1000, // Col 0 (Outer edge)
+      800, // Col 1
+      500, // Col 2
+      0    // Col 3 (Inner center)
+    ];
+
+    const SETUP_SEC = 5;   // Time to reach start positions
+    const SPIN_SEC = 20;   // Time for the 4 rotations
+    const FINAL_SEC = 3;   // Time to settle into the final digital time
+    const SETUP_WAIT = 2500; // ms to wait before starting the spin phase
+
+    // --- PHASE 1: Go to predefined start position (Shortest Path) ---
+    for (let c = 0; c < 8; c++) {
+      // Mirror the index: 0,1,2,3 for left half -> 3,2,1,0 for right half
+      // Or simply loop 0,1,2,3, 0,1,2,3 depending on how you structure your visual
+      // For exact left/right mirroring: c < 4 ? c : 7 - c
+      const mirrorCol = c < 4 ? c : 7 - c; 
+      
+      // Direction 6 = MIN_DISTANCE (Shortest Path)
+      setHalfDigit(c, halfPositions[mirrorCol], 6, SETUP_SEC); 
+    }
+
+    // --- PHASE 2: Start 4 Rotations with Delays ---
+    setTimeout(() => {
+      for (let c = 0; c < 8; c++) {
+        const mirrorCol = c < 4 ? c : 7 - c;
+        const delay = halfDelays[mirrorCol];
+        
+        setTimeout(() => {
+          // Because your existing setHalfDigit applies the same multi-spin 
+          // logic to BOTH hands, we must inject the 4 opposite rotations (1440 degrees) 
+          // directly into the animation state to ensure they spin in opposite directions.
+          
+          for (let r = 0; r < 3; r++) {
+            const clockId = c * 3 + r;
+            const anim = anim_state[Math.floor(c/2)][r + (c%2)*3];
+            
+            // Add 4 full clockwise rotations to the hour hand
+            anim[0] += (360 * 4); 
+            // Add 4 full counter-clockwise rotations to the minute hand
+            anim[1] -= (360 * 4); 
+            
+            // Apply to the CSS
+            setHands(clockId, anim[0], anim[1], SPIN_SEC);
+          }
+        }, delay);
+      }
+    }, SETUP_WAIT);
+
+    // --- PHASE 3: Choose shortest path to final time ---
+    // Wait for Setup Time + Max Delay + Spin Time
+    const maxDelay = Math.max(...halfDelays);
+    const FINAL_WAIT = SETUP_WAIT + maxDelay + (SPIN_SEC * 1000);
+
+    setTimeout(() => {
+      for (let i = 0; i < 4; i++) {
+        // Direction 6 = MIN_DISTANCE (Shortest Path)
+        setDigit(i, digits[time.charAt(i)], 6, FINAL_SEC);
+      }
+    }, FINAL_WAIT);
+  }
+
+  // Sets time with spiral animation (diagonal wave sweep)
+  function setSpiral(time) {
+    for (let i = 0; i < 4; i++)
+      setDigit(i, digit_II, 6, 8)
+    setTimeout(() => {
+      for (let c = 0; c < 8; c++) {
+        const angle = (c * 45) % 360
+        setHalfDigit(c, [[angle, angle], [angle, angle], [angle, angle]], 6, 5)
+      }
+    }, 5500)
+    for (let i = 0; i < 8; i++)
+      setTimeout(() => {
+        const d = Math.floor(i / 2)
+        const h = i % 2
+        setHalfDigit(i, digits[time.charAt(d)].slice(h * 3, h * 3 + 3), 1, 15)
+      }, 10500 + i * 400)
+  }
+
+  // Dispatches to the selected animation
+  function dispatchAnimation(time) {
+    let anim = selectedAnimation
+    if (anim === 4) anim = advanceCycle()
+    switch(anim) {
+      case 0: setWaves(time); break
+      case 1: setFun(time); break
+      case 2: setCircle(time); break
+      case 3: setSpiral(time); break
+    }
+  }
+
+  // Advances cycle index and returns the next animation index (0-3)
+  function advanceCycle() {
+    let anim
+    if (selectedCycleType === 1) {
+      anim = Math.floor(Math.random() * 4)
+    } else {
+      anim = currentCycleIndex
+      currentCycleIndex = (currentCycleIndex + 1) % 4
+    }
+    return anim
+  }
+
   // Last time setted on clock
   let lastTime
-  
+
   // Sets current time on clock
   function setTime() {
     const d = new Date();
@@ -845,16 +1051,10 @@
     const hours = d.getHours()
     if (time !== lastTime && sleep[day][hours] === 0) {
       lastTime = time
-      switch(selectedMode) {
-        case 0:
-          setLazy(lastTime)
-          break;
-        case 1:
-          setFun(lastTime)
-          break;
-        case 2:
-          setWaves(lastTime)
-          break;
+      if (selectedMode === 1) {
+        setLazy(lastTime)
+      } else if (selectedMode === 2) {
+        dispatchAnimation(lastTime)
       }
     } else if (sleep[day][hours] === 1) {
       setStop()

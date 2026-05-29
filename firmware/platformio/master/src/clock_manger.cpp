@@ -143,6 +143,23 @@ void set_clock_time(int h, int m)
   set_clock(get_clock_state_from_time(h, m));
 }
 
+void set_custom_clock(const uint16_t angles[24][2], int speed, int accel, int direction)
+{
+  set_speed(speed);
+  set_acceleration(accel);
+  set_direction(direction);
+  t_full_clock clock = {0};
+  for (int i = 0; i < 24; i++)
+  {
+    int d = i / 6;
+    int h = (i % 6) / 3;
+    int c = i % 3;
+    clock.digit[d].halfs[h].clocks[c].angle_h = angles[i][0];
+    clock.digit[d].halfs[h].clocks[c].angle_m = angles[i][1];
+  }
+  set_clock(clock);
+}
+
 t_full_clock get_clock_state_from_time(int h, int m)
 {
   int d0 = h / 10;
