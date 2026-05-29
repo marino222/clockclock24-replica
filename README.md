@@ -22,8 +22,7 @@ This project is a hardware and software replica of the kinetic art piece "ClockC
     1. [Master](#master)
     2. [Slave](#slave)
     3. [Web Interface](#web-interface)
-4. [How to get started](#get-started)
-5. [Credits](#credits)
+4. [Credits](#credits)
 
 ---
 
@@ -83,7 +82,7 @@ The [VID6606 Datasheet](docs/datasheets/VID6606_datasheet.pdf) specifically reco
 
 During testing, the steppers were quite noisy. I first suspected the motor drivers and tried some alternatives (DRV8834, TMC2208), but that didn't help much, so I stayed with the VID6606. 
 
-The real cause turned out to be mechanical play in the motor shafts. I also noticed the noise only appears at certain speeds, at full speed it mostly goes away. So adjusting the acceleration profile in software might help. For now I decided to leave the mechanical play as-is, since adding a bearing would be quite complex. I plan to experiment with the AccelStepper parameters (see [Software](#software)).
+The real cause turned out to be mechanical play in the motor shafts. I also noticed the noise only appears at certain speeds, at full speed it mostly goes away. So adjusting the acceleration profile in software might help. For now I decided to leave the mechanical play as-is, since adding a bearing would be quite complex.
 
 ---
 
