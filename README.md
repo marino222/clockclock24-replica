@@ -261,20 +261,20 @@ Each slave board operates independently once it receives position commands from 
 
 Each slave board (Raspberry Pi Pico) determines its I2C address automatically based on four DIP switch pins (ADDR_1 through ADDR_4) defined in [`board_config.h`](firmware/platformio/slave/include/board_config.h). The address is calculated in [`board.cpp`](firmware/platformio/slave/src/board.cpp) by reading the state of these pins, which use INPUT_PULLUP logic. When a DIP switch is ON (connected to ground), it represents a binary 1. When OFF (open/floating), it represents a binary 0.
 
-The master controller sends commands to each board sequentially using the formula `index + 1` as seen in [`clock_manger.cpp`](firmware/platformio/master/src/clock_manger.cpp), where index 0 corresponds to I2C address 1 (the leftmost board).
+The master controller sends commands to each board sequentially as seen in [`clock_manger.cpp`](firmware/platformio/master/src/clock_manger.cpp), where I2C address 15 corresponds to the rightmost board. The first address is 0x08, because in the I2C protocol 0x01 to 0x07 are reserved.
 
 #### Board Address Configuration (Left to Right)
 
 | I2C Address | Binary | DIP 1 | DIP 2 | DIP 3 | DIP 4|
 |-------------------|-------------|--------|----------------|--------------|--------------|
-| 1 | 0001 | 0 | 0 | 0 | 1 |
-| 2 | 0010 | 0 | 0 | 1 | 0 |
-| 3 | 0011 | 0 | 0 | 1 | 1 |
-| 4 | 0100 | 0 | 1 | 0 | 0 |
-| 5 | 0101 | 0 | 1 | 0 | 1 |
-| 6 | 0110 | 0 | 1 | 1 | 0 |
-| 7 | 0111 | 0 | 1 | 1 | 1 |
-| 8 | 1000 | 1 | 0 | 0 | 0 |
+| 8  | 1000 | 1 | 0 | 0 | 0 |
+| 9  | 1001 | 1 | 0 | 0 | 1 |
+| 10 | 1010 | 1 | 0 | 1 | 0 |
+| 11 | 1011 | 1 | 0 | 1 | 1 |
+| 12 | 1100 | 1 | 1 | 0 | 0 |
+| 13 | 1101 | 1 | 1 | 0 | 1 |
+| 14 | 1110 | 1 | 1 | 1 | 0 |
+| 15 | 1111 | 1 | 1 | 1 | 1 |
 
 <p align="center"><img src="docs/images/dip_switch.jpg" alt="DIP Switch" width="300" /></p>
 

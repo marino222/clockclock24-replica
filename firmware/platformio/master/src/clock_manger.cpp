@@ -3,6 +3,7 @@
 int _speed = 200;
 int _acceleration = 100;
 int _direction = MIN_DISTANCE;
+constexpr uint8_t I2C_FIRST_SLAVE_ADDR = 0x08;
 
 // Changes when the clock state changes
 uint32_t _counter = 1;
@@ -45,7 +46,7 @@ void set_direction(int value)
 void debug_print_half_digit(int index, const t_half_digit &hd)
 {
   Serial.printf("[I2C] Board %d (Addr %d), state_counter ~ %lu\n",
-                index, index + 1, (unsigned long)hd.change_counter[0]);
+                index, index + I2C_FIRST_SLAVE_ADDR, (unsigned long)hd.change_counter[0]);
 
   for (int i = 0; i < 3; i++)
   {
@@ -71,7 +72,7 @@ void send_half_digit(int index, t_half_digit half_digit)
   // Debug-Ausgabe VOR dem Senden
   //debug_print_half_digit(index, half_digit);
 
-  Wire.beginTransmission(index + 1);
+  Wire.beginTransmission(index + I2C_FIRST_SLAVE_ADDR);
   I2C_writeAnything(half_digit);
   Wire.endTransmission();
 }

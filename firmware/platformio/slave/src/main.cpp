@@ -4,6 +4,7 @@
 #include "board.h"
 #include "clock_state.h"
 #include "i2c.h"
+#include <WiFi.h>
 
 const t_clock default_clock = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -12,6 +13,9 @@ spin_lock_t *spin_lock[3]; //The spinlock object that will be associated with sp
 
 t_half_digit target_clocks_state;
 t_half_digit current_clocks_state;
+
+constexpr unsigned long ADDRESS_PRINT_INTERVAL_MS = 5000;
+unsigned long last_address_print_ms = 0;
 
 // I2C runs on main core (core 0)
 void receiveEvent(int how_many)
@@ -34,12 +38,16 @@ void receiveEvent(int how_many)
 
 void setup()
 {  
+
   Serial.begin(115200);
-  while (!Serial) delay(10); // wait for serial port to connect 
+  unsigned long serial_wait_start = millis();
+  while (!Serial && millis() - serial_wait_start < 1500) delay(10);
   Serial.println("clockclock24 replica by Vallasc slave v1.0");
 
+  delay(1000); //Wait a bit to ensure the master controller boots before the slaves
+
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(LED_BUILTIN, LOW);
 
   board_begin();
   target_clocks_state = {{default_clock, default_clock, default_clock}, {0, 0, 0}};
@@ -50,12 +58,20 @@ void setup()
     spin_lock[i] = spin_lock_init(spin_num); //Initialise a spin lock
   }
 
+  Wire.setSDA(WIRE_SDA);
+  Wire.setSCL(WIRE_SCL);
   Wire.begin(get_i2c_address());
   Wire.onReceive(receiveEvent);
 }
 
 void loop()
 {
+  if (millis() - last_address_print_ms >= ADDRESS_PRINT_INTERVAL_MS)
+  {
+    last_address_print_ms = millis();
+    Serial.printf("[Slave] I2C address: 0x%02X (%u)\n", get_i2c_address(), get_i2c_address());
+  }
+
   delay(10);
 }
 
@@ -72,7 +88,7 @@ void loop1()
   {
     if(!clock_is_running(i) && current_clocks_state.change_counter[i] != target_clocks_state.change_counter[i])
     {
-      //Serial.printf("Inside clock %d\n", i);
+      Serial.printf("Inside clock %d\n", i);
       spin_lock_unsafe_blocking(spin_lock[i]);
       current_clocks_state.clocks[i] = target_clocks_state.clocks[i];
       current_clocks_state.change_counter[i] = target_clocks_state.change_counter[i];

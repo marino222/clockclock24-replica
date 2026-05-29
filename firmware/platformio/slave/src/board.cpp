@@ -31,7 +31,7 @@ void board_begin()
       _motors[i].setReverse(true);
     _motors[i].setMaxMotorSteps(STEPS);
     _motors[i].setHandAngle(INIT_HANDS_ANGLE);
-    _motors[i].setMinPulseWidth(0);
+    _motors[i].setMinPulseWidth(5);
   }
 
   pinMode(ADDR_1, INPUT_PULLUP);
