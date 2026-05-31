@@ -28,10 +28,11 @@ enum clock_modes
 enum clock_animations
 {
   WAVE = 0,
-  FUN = 1,
+  CHAOS = 1,
   CIRCLE = 2,
   SPIRAL = 3,
-  CYCLE = 4
+  ATTRACT = 4,
+  CYCLE = 5
 };
 
 /**

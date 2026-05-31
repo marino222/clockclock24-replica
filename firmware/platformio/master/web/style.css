@@ -1,0 +1,304 @@
+/* ─── Custom Properties ──────────────────────────────────────── */
+:root {
+  --clock-size: 8vw;    /* face diameter */
+  --half-clock: 4vw;    /* half of face diameter, used for button positioning */
+  --bg: #212121;
+  --accent: #c60a0a;    /* destructive / active-hover red */
+  --hover: #b4b4b44b;   /* subtle hover highlight */
+}
+
+/* ─── Layout ─────────────────────────────────────────────────── */
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: Tahoma, Helvetica, sans-serif;
+  color: #FFF;
+  background-color: var(--bg);
+  cursor: default;
+  user-select: none;
+  font-size: 14px;
+}
+
+/* ─── Page Elements ──────────────────────────────────────────── */
+#art {
+  margin: 80px 0;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.text {
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.footer-main-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border: 1px solid #5a5a5a;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.footer-main-link:hover {
+  background-color: var(--hover);
+  color: #fff;
+}
+
+.footer-main-link svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.footer-credits {
+  color: #c7c7c7;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.footer-credits p {
+  margin: 0;
+}
+
+a {
+  color: #8a8a8a;
+  text-decoration: none;
+}
+
+/* ─── Clock Face ─────────────────────────────────────────────── */
+.half-digit {
+  float: left;
+}
+
+.clock {
+  --small-hand: 90deg;
+  --large-hand: 90deg;
+  --animation-time: 15s;
+  width: var(--clock-size);
+  height: var(--clock-size);
+  border-radius: 50%;
+  box-shadow: inset 0 0 3px #fff;
+  float: left;
+  cursor: pointer;
+  position: absolute;
+}
+
+.clock:nth-of-type(n + 1) {
+  clear: left;
+}
+
+.clock-smallHand,
+.clock-largeHand {
+  transform-origin: 50px center;
+  transition-timing-function: ease;
+  transition: transform var(--animation-time);
+}
+
+.clock-smallHand {
+  transform: rotateZ(var(--small-hand));
+}
+
+.clock-largeHand {
+  transform: rotateZ(var(--large-hand));
+}
+
+/* ─── Visibility Helpers ─────────────────────────────────────── */
+.hidden .btn-clock {
+  display: none;
+}
+
+#external.hidden {
+  display: none;
+}
+
+#animation-section.hidden {
+  display: none;
+}
+
+#cycle-options.hidden {
+  display: none;
+}
+
+/* ─── Clock Adjustment Buttons ───────────────────────────────── */
+/* Overlay buttons appear on click; positioned in the four quadrants of the clock face. */
+.btn-clock {
+  position: absolute;
+  width: var(--half-clock);
+  height: var(--half-clock);
+  background-color: #212121dc;
+  box-shadow: inset 0 0 3px #fff;
+  font-size: 0.8vw;
+  font-weight: bold;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.btn-clock:hover {
+  background-color: var(--accent);
+}
+
+.btn-clock.btn-clock-tl {
+  border-radius: var(--half-clock) 0 0 0;
+}
+
+.btn-clock.btn-clock-tr {
+  margin-left: var(--half-clock);
+  border-radius: 0 var(--half-clock) 0 0;
+}
+
+.btn-clock.btn-clock-bl {
+  margin-top: var(--half-clock);
+  border-radius: 0 0 0 var(--half-clock);
+}
+
+.btn-clock.btn-clock-br {
+  margin-left: var(--half-clock);
+  margin-top: var(--half-clock);
+  border-radius: 0 0 var(--half-clock) 0;
+}
+
+/* ─── Clock Container ────────────────────────────────────────── */
+.clock-box {
+  width: var(--clock-size);
+  height: var(--clock-size);
+  margin: 0.2vw;
+}
+
+/* ─── Action Buttons ─────────────────────────────────────────── */
+.btn {
+  width: 72px;
+  height: 48px;
+  margin: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  border-width: 0;
+  padding: 0;
+  background-color: transparent;
+  color: #fff;
+  box-shadow: inset 0 0 2px #dfdfdf;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  float: left;
+}
+
+.btn:hover {
+  background-color: var(--hover);
+}
+
+.btn.active {
+  background-color: #dfdfdf;
+  box-shadow: inset 0 0 0 2px #dfdfdf;
+  color: black;
+}
+
+/* Day button pressed state: extends downward to visually connect with the hours grid below. */
+.btn.day-active {
+  background-color: #dfdfdf;
+  box-shadow: inset 0 0 0 2px #dfdfdf;
+  color: black;
+  padding-bottom: 8px;
+  margin-bottom: 0;
+}
+
+/* ─── Sleep Schedule ─────────────────────────────────────────── */
+.checkbox {
+  width: 44px;
+  height: 16px;
+  box-shadow: inset 0 0 1px black;
+  float: left;
+  margin: 2px;
+  margin-bottom: 8px;
+}
+
+.checkbox:hover {
+  background-color: #b4b4b4;
+}
+
+.checkbox.selected {
+  background-color: black;
+}
+
+.hour-text {
+  width: 48px;
+  height: 16px;
+  color: #212121dc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  float: left;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.spacer {
+  height: 24px;
+}
+
+.hours-box {
+  background-color: #dfdfdf;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+}
+
+/* ─── Form Inputs ────────────────────────────────────────────── */
+.input-text {
+  width: 172px;
+  height: 48px;
+  margin: 4px;
+  box-shadow: inset 0 0 2px #dfdfdf;
+  background-color: transparent;
+  border-color: transparent;
+  color: white;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 16px;
+  padding-right: 16px;
+  font-size: 16px;
+  float: left;
+  display: inline;
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.input-text:focus-visible {
+  outline: transparent;
+}
+
+.input-text::selection {
+  color: black;
+  background: white;
+}

@@ -19,7 +19,7 @@ void begin_config()
 {
   prefs.begin("clockclock24");
   _clock_mode = prefs.getInt("mode2", LAZY);
-  _clock_animation = prefs.getInt("anim", WAVE);
+  _clock_animation = prefs.getInt("anim", CHAOS);
   _cycle_type = prefs.getInt("cycle", SEQUENTIAL);
   _wireless_mode = prefs.getInt("wireless_mode", HOTSPOT);
   _clock_timezone = prefs.getInt("clock_timezone", 0);
@@ -41,7 +41,7 @@ void clear_config()
 {
   prefs.clear();
   _clock_mode = LAZY;
-  _clock_animation = WAVE;
+  _clock_animation = CHAOS;
   _cycle_type = SEQUENTIAL;
   _wireless_mode = HOTSPOT;
   strncpy(_ssid, "", sizeof(_ssid));

@@ -47,9 +47,9 @@ int advance_cycle();
 void set_lazy();
 
 /**
- * Sets clock time using fun animation
+ * Sets clock time using chaos animation
 */
-void set_fun();
+void set_chaos();
 
 /**
  * Sets clock time using waves animation
@@ -65,6 +65,11 @@ void set_circle();
  * Sets clock time using spiral animation (diagonal wave sweep)
 */
 void set_spiral();
+
+/**
+ * Sets clock time using attraction animation (digits move to attraction vector field)
+*/
+void set_attract();
 
 /**
  * Sets clock to stop state
@@ -193,8 +198,9 @@ void set_animated()
   switch(anim)
   {
     case WAVE:   set_waves();  break;
-    case FUN:    set_fun();    break;
+    case CHAOS:    set_chaos();    break;
     case CIRCLE: set_circle(); break;
+    case ATTRACT: set_attract(); break;
     case SPIRAL: set_spiral(); break;
   }
 }
@@ -204,12 +210,13 @@ int advance_cycle()
   int anim;
   if (get_cycle_type() == RANDOM_ORDER)
   {
-    anim = random(0, 4);
+    uint32_t seed = (uint32_t)(hour() * 60 + minute());
+    anim = (int)((seed * 2654435761UL) % 5);
   }
   else
   {
     anim = current_cycle_index;
-    current_cycle_index = (current_cycle_index + 1) % 4;
+    current_cycle_index = (current_cycle_index + 1) % 5;
   }
   return anim;
 }
@@ -222,7 +229,7 @@ void set_lazy()
   set_clock_time(last_hour, last_minute);
 }
 
-void set_fun()
+void set_chaos()
 {
   set_speed(400);
   set_acceleration(150);
@@ -232,50 +239,17 @@ void set_fun()
 
 void set_circle()
 {
-  // Phase 1+2: all 24 clocks snap to 0°/180° disc formation then spin 3 full rotations
-  uint16_t disc[24][2];
-  for (int i = 0; i < 24; i++) { disc[i][0] = 0; disc[i][1] = 180; }
-  set_custom_clock(disc, 800, 150, CLOCKWISE3);
-  _delay(14000);
-
-  // Phase 3: settle to time
-  set_speed(400);
-  set_acceleration(150);
-  set_direction(MIN_DISTANCE);
-  set_clock_time(last_hour, last_minute);
+  /*TODO*/
 }
 
 void set_spiral()
 {
-  // Phase 1: reset to IIII pattern
-  set_speed(800);
-  set_acceleration(150);
-  set_direction(MIN_DISTANCE);
-  set_clock(d_IIII);
-  _delay(5000);
+  /*TODO*/
+}
 
-  // Phase 2: diagonal wave — each column (half-digit) offset by 45 degrees
-  uint16_t wave[24][2];
-  for (int i = 0; i < 24; i++)
-  {
-    int col = i / 3;  // half-digit index 0-7 = column
-    uint16_t angle = (col * 45) % 360;
-    wave[i][0] = angle;
-    wave[i][1] = angle;
-  }
-  set_custom_clock(wave, 600, 100, MIN_DISTANCE);
-  _delay(5000);
-
-  // Phase 3: cascade half-digits to time
-  set_speed(400);
-  set_acceleration(100);
-  set_direction(CLOCKWISE2);
-  t_full_clock clock = get_clock_state_from_time(last_hour, last_minute);
-  for (int i = 0; i < 8; i++)
-  {
-    set_half_digit(i, clock.digit[i/2].halfs[i%2]);
-    delay(400);
-  }
+void set_attract()
+{
+  /*TODO*/
 }
 
 void set_waves()
