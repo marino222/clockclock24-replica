@@ -754,8 +754,8 @@ function setAttract(time) {
   const STEP_SEC    = 0.15     // s: CSS transition per step (> UPDATE_MS for smooth trail)
   const FINAL_SEC   = 4        // s: settle into digit positions
 
-  // Rectangle traversal starting and ending at the setup position
-  const waypoints = [[1.5,1.5],[1.5,2.5],[7.5,2.5],[7.5,1.5],[1.5,1.5]]
+  // Outer perimeter: (0,0)→(9,0)→(9,4)→(0,4)→(0,0), just outside the clock grid (x:1–8, y:1–3)
+  const waypoints = [[0,0],[9,0],[9,4],[0,4],[0,0]]
 
   // Move all clocks to point at (cx, cy), both hands overlapping, shortest path
   function updateHandsToAttractor(cx, cy, sec) {
@@ -783,7 +783,7 @@ function setAttract(time) {
   }
 
   // Phase 1: align to initial attractor position
-  updateHandsToAttractor(1.5, 1.5, SETUP_SEC)
+  updateHandsToAttractor(0, 0, SETUP_SEC)
 
   // Build position sequence for the rectangle path
   const positions = []

@@ -42,7 +42,7 @@ void set_direction(int value)
   _direction = value;
 }
 
-// Debug-Ausgabe: zeigt, was an ein Half-Digit-Board gesendet wird
+
 void debug_print_half_digit(int index, const t_half_digit &hd)
 {
   Serial.printf("[I2C] Board %d (Addr %d), state_counter ~ %lu\n",
@@ -69,8 +69,6 @@ void debug_print_half_digit(int index, const t_half_digit &hd)
 
 void send_half_digit(int index, t_half_digit half_digit)
 {
-  // Debug-Ausgabe VOR dem Senden
-  //debug_print_half_digit(index, half_digit);
 
   Wire.beginTransmission(index + I2C_FIRST_SLAVE_ADDR);
   I2C_writeAnything(half_digit);

@@ -6,10 +6,9 @@ function processPage(inputFile, outputFile, macroName, headerGuard) {
     console.log(`Minimizing ${inputFile}`);
     let data = fs.readFileSync(inputFile, 'utf8');
 
-    // Inject external files referenced as <!-- inject:filename --> comments.
-    // Resolved relative to the input file's directory, so each HTML file can
-    // have its own companion CSS/JS without hardcoded paths here.
     const dir = path.dirname(path.resolve(inputFile));
+
+    // Inject external files referenced as <!-- inject:filename --> comments.
     data = data.replace(/<!--\s*inject:([\w.\-/]+)\s*-->/g, (match, filename) => {
         const filePath = path.join(dir, filename.trim());
         if (fs.existsSync(filePath)) {
@@ -18,6 +17,28 @@ function processPage(inputFile, outputFile, macroName, headerGuard) {
         }
         console.warn(`  Warning: inject target not found: ${filePath}`);
         return '';
+    });
+
+    // Inline <link rel="stylesheet" href="..."> as <style> blocks.
+    data = data.replace(/<link\s[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*\/?>/gi, (match, href) => {
+        const filePath = path.join(dir, href);
+        if (fs.existsSync(filePath)) {
+            console.log(`  Inlining CSS ${filePath}`);
+            return `<style>${fs.readFileSync(filePath, 'utf8')}</style>`;
+        }
+        console.warn(`  Warning: stylesheet not found: ${filePath}`);
+        return match;
+    });
+
+    // Inline <script src="..."></script> tags.
+    data = data.replace(/<script\s[^>]*src=["']([^"']+)["'][^>]*><\/script>/gi, (match, src) => {
+        const filePath = path.join(dir, src);
+        if (fs.existsSync(filePath)) {
+            console.log(`  Inlining JS ${filePath}`);
+            return `<script>${fs.readFileSync(filePath, 'utf8')}</script>`;
+        }
+        console.warn(`  Warning: script not found: ${filePath}`);
+        return match;
     });
 
     const result = minify(data, {

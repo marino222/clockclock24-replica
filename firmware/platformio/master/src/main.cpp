@@ -1,6 +1,11 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <TimeLib.h>
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979f
+#endif
 
 #include "i2c.h"
 #include "clock_state.h"
@@ -237,9 +242,81 @@ void set_chaos()
   set_clock_time(last_hour, last_minute);
 }
 
+static float circle_raw_angle(int col, int row, int hand_idx)
+{
+    const float cx = 4.5f, cy = 2.0f;
+    const float max_dist = sqrtf(3.5f * 3.5f + 1.0f * 1.0f);
+    const float inner_angle = 70.0f, outer_angle = 80.0f;
+
+    float x = (float)(col + 1), y = (float)(row + 1);
+    float dx = cx - x, dy = cy - y;
+    float theta = atan2f(dy, dx) * 180.0f / (float)M_PI;
+    float r_norm = fminf(sqrtf(dx*dx + dy*dy) / max_dist, 1.0f);
+    float offset = inner_angle + (outer_angle - inner_angle) * r_norm;
+
+    return (hand_idx == 0) ? theta + offset : 360.0f + theta - offset;
+}
+
+static uint16_t circle_fw_angle(float js_angle)
+{
+    float a = fmodf(js_angle, 360.0f);
+    if (a < 0.0f) a += 360.0f;
+    int norm = (int)roundf(a);
+    if (norm == 360) norm = 0;
+    return (uint16_t)((360 - norm) % 360);
+}
+
 void set_circle()
 {
-  /*TODO*/
+    const unsigned long P1_WAIT_MS = 8000UL;
+    const int           P2_RIPPLE  = 800;
+    const unsigned long P2_WAIT_MS = 17000UL;
+    const int           P3_RIPPLE  = 400;
+
+    t_half_digitl vec[8];
+    for (int hd = 0; hd < 8; hd++)
+        for (int r = 0; r < 3; r++) {
+            vec[hd].clocks[r].angle_h = circle_fw_angle(circle_raw_angle(hd, r, 0));
+            vec[hd].clocks[r].angle_m = circle_fw_angle(circle_raw_angle(hd, r, 1));
+        }
+
+    // Phase 1: move all clocks to vector field positions (shortest path)
+    set_speed(800);
+    set_acceleration(150);
+    set_direction(MIN_DISTANCE);
+    for (int hd = 0; hd < 8; hd++)
+        set_half_digit(hd, vec[hd]);
+
+    { unsigned long t = millis() + P1_WAIT_MS;
+      while (millis() < t) { update_MDNS(); handle_webclient();
+                             if (is_ota_in_progress()) return; delay(100); } }
+
+    // Phase 2: ripple spin center-outward, left half CW, right half CCW
+    set_speed(800);
+    set_acceleration(150);
+    static const int left[]  = {3, 2, 1, 0};
+    static const int right[] = {4, 5, 6, 7};
+    for (int g = 0; g < 4; g++) {
+        set_direction(CLOCKWISE3);
+        set_half_digit(left[g],  vec[left[g]]);
+        set_direction(COUNTERCLOCKWISE3);
+        set_half_digit(right[g], vec[right[g]]);
+        if (g < 3) delay(P2_RIPPLE);
+    }
+
+    { unsigned long t = millis() + P2_WAIT_MS;
+      while (millis() < t) { update_MDNS(); handle_webclient();
+                             if (is_ota_in_progress()) return; delay(100); } }
+
+    // Phase 3: settle to current time
+    set_speed(400);
+    set_acceleration(100);
+    set_direction(MIN_DISTANCE);
+    t_full_clock clock = get_clock_state_from_time(last_hour, last_minute);
+    for (int i = 0; i < 8; i++) {
+        set_half_digit(i, clock.digit[i/2].halfs[i%2]);
+        delay(P3_RIPPLE);
+    }
 }
 
 void set_spiral()
