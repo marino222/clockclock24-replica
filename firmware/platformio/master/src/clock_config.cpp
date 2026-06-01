@@ -18,7 +18,7 @@ char _ota_password[64];
 void begin_config()
 {
   prefs.begin("clockclock24");
-  _clock_mode = prefs.getInt("mode2", LAZY);
+  _clock_mode = prefs.getInt("mode2", OFF);
   _clock_animation = prefs.getInt("anim", CHAOS);
   _cycle_type = prefs.getInt("cycle", SEQUENTIAL);
   _wireless_mode = prefs.getInt("wireless_mode", HOTSPOT);
@@ -40,7 +40,7 @@ void end_config()
 void clear_config()
 {
   prefs.clear();
-  _clock_mode = LAZY;
+  _clock_mode = OFF;
   _clock_animation = CHAOS;
   _cycle_type = SEQUENTIAL;
   _wireless_mode = HOTSPOT;

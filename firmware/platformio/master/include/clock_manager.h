@@ -114,6 +114,15 @@ void set_custom_clock(const uint16_t angles[24][2], int speed, int accel, int di
 */
 t_full_clock get_clock_state_from_time(int h, int m);
 
+/**
+ * Sets the target angle for a single clock (within a board) without changing others.
+ * @param board     board index (0 <= index < 8)
+ * @param clock     clock index on the board (0 <= index < 3)
+ * @param angle_h   target hour angle
+ * @param angle_m   target minute angle
+*/
+void set_single_clock_target(int board, int clock, int angle_h, int angle_m);
+
 /** 
  * @param clock_index   single clock index (0 <= index < 24)
  * @param h_amount      hours hand degree of adjustment

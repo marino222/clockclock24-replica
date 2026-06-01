@@ -104,7 +104,6 @@ void i2c_begin_safe();
 
 void setup() {
 
-  
 
   Serial.begin(115200);
   Serial.println("\nClockClock24 by marino222");
@@ -242,86 +241,119 @@ void set_chaos()
   set_clock_time(last_hour, last_minute);
 }
 
-static float circle_raw_angle(int col, int row, int hand_idx)
-{
-    const float cx = 4.5f, cy = 2.0f;
-    const float max_dist = sqrtf(3.5f * 3.5f + 1.0f * 1.0f);
-    const float inner_angle = 70.0f, outer_angle = 80.0f;
 
-    float x = (float)(col + 1), y = (float)(row + 1);
-    float dx = cx - x, dy = cy - y;
-    float theta = atan2f(dy, dx) * 180.0f / (float)M_PI;
-    float r_norm = fminf(sqrtf(dx*dx + dy*dy) / max_dist, 1.0f);
-    float offset = inner_angle + (outer_angle - inner_angle) * r_norm;
-
-    return (hand_idx == 0) ? theta + offset : 360.0f + theta - offset;
-}
-
-static uint16_t circle_fw_angle(float js_angle)
-{
-    float a = fmodf(js_angle, 360.0f);
-    if (a < 0.0f) a += 360.0f;
-    int norm = (int)roundf(a);
-    if (norm == 360) norm = 0;
-    return (uint16_t)((360 - norm) % 360);
-}
 
 void set_circle()
 {
-    const unsigned long P1_WAIT_MS = 8000UL;
-    const int           P2_RIPPLE  = 800;
-    const unsigned long P2_WAIT_MS = 17000UL;
-    const int           P3_RIPPLE  = 400;
+  /*TODO*/
+}
 
-    t_half_digitl vec[8];
-    for (int hd = 0; hd < 8; hd++)
-        for (int r = 0; r < 3; r++) {
-            vec[hd].clocks[r].angle_h = circle_fw_angle(circle_raw_angle(hd, r, 0));
-            vec[hd].clocks[r].angle_m = circle_fw_angle(circle_raw_angle(hd, r, 1));
-        }
 
-    // Phase 1: move all clocks to vector field positions (shortest path)
-    set_speed(800);
-    set_acceleration(150);
-    set_direction(MIN_DISTANCE);
-    for (int hd = 0; hd < 8; hd++)
-        set_half_digit(hd, vec[hd]);
+/**
+ * Returns the angle (degrees, 0 = right, CW+) for a hand at grid
+ * position (x, y) pointing toward the attractor at (cx, cy).
+ */
+float get_angle_to_attractor(int x, int y, float cx, float cy)
+{
+  return atan2(cy - y, cx - x) * 180.0f / M_PI;
+}
 
-    { unsigned long t = millis() + P1_WAIT_MS;
-      while (millis() < t) { update_MDNS(); handle_webclient();
-                             if (is_ota_in_progress()) return; delay(100); } }
-
-    // Phase 2: ripple spin center-outward, left half CW, right half CCW
-    set_speed(800);
-    set_acceleration(150);
-    static const int left[]  = {3, 2, 1, 0};
-    static const int right[] = {4, 5, 6, 7};
-    for (int g = 0; g < 4; g++) {
-        set_direction(CLOCKWISE3);
-        set_half_digit(left[g],  vec[left[g]]);
-        set_direction(COUNTERCLOCKWISE3);
-        set_half_digit(right[g], vec[right[g]]);
-        if (g < 3) delay(P2_RIPPLE);
-    }
-
-    { unsigned long t = millis() + P2_WAIT_MS;
-      while (millis() < t) { update_MDNS(); handle_webclient();
-                             if (is_ota_in_progress()) return; delay(100); } }
-
-    // Phase 3: settle to current time
-    set_speed(400);
-    set_acceleration(100);
-    set_direction(MIN_DISTANCE);
-    t_full_clock clock = get_clock_state_from_time(last_hour, last_minute);
-    for (int i = 0; i < 8; i++) {
-        set_half_digit(i, clock.digit[i/2].halfs[i%2]);
-        delay(P3_RIPPLE);
-    }
+/**
+ * Returns the outward-ripple delay (ms) for a clock at grid position (x, y).
+ * x: 1 to 8 (column), y: 1 to 3 (row).
+ */
+int calculate_start_delay(int x, int y, float speed_multiplier)
+{
+  float dx = 4.5f - x;
+  float dy = 2.0f - y;
+  float distance = sqrt(dx * dx + dy * dy);
+  float d = speed_multiplier * (distance - 0.5f);
+  return d > 0 ? (int)d : 0;
 }
 
 void set_spiral()
 {
-  /*TODO*/
+  const int SETUP_WAIT_MS = 10000;   // ms: reach attractor field + pause
+  const float DELAY_SPEED = 300.0f; // ms: per unit grid distance (ripple speed)
+  const int PHASE1_SPEED = 400;     // motor speed for phase 1
+  const int PHASE1_ACCEL = 150;     // motor acceleration for phase 1
+  const int PHASE2_SPEED = 400;     // motor speed for phase 2
+  const int PHASE2_ACCEL = 100;     // motor acceleration for phase 2
+
+  // Phase 1: All hands move to attractor field (4.5, 2.0)
+
+  uint16_t angles_phase1[24][2]; //24 clock with each 2 hands: stores individual angles
+  for (int i = 0; i < 24; i++) {
+    int c = i / 3; // column (0 to 7)
+    int r = i % 3; // row (0 to 2)
+
+    float angle = get_angle_to_attractor(c + 1, r + 1, 4.5f, 2.0f);
+
+    // Ensure angle is in [0, 360) and positive
+    int target = (int)round(360.0f - angle) % 360;
+    if (target < 0) target += 360;
+    angles_phase1[i][0] = target;
+    angles_phase1[i][1] = target;
+  }
+  set_custom_clock(angles_phase1, PHASE1_SPEED, PHASE1_ACCEL, MIN_DISTANCE);
+  _delay(SETUP_WAIT_MS); // Wait for setup
+
+  // Phase 2 + 3: Ripple spin to final digits
+  set_speed(PHASE2_SPEED);
+  set_acceleration(PHASE2_ACCEL);
+  set_direction(CLOCKWISE3);
+
+  t_full_clock final_clock = get_clock_state_from_time(last_hour, last_minute);
+
+  // Sort the 24 clocks by delay
+  struct ClockTask {
+    int c; //column
+    int r; //row
+    int delay_ms;
+  } tasks[24];
+
+  for (int i = 0; i < 24; i++) {
+    tasks[i].c = i / 3;
+    tasks[i].r = i % 3;
+    tasks[i].delay_ms = calculate_start_delay(tasks[i].c + 1, tasks[i].r + 1, DELAY_SPEED);
+  }
+
+  // Bubble sort tasks by delay
+  for (int i = 0; i < 23; i++) {
+    for (int j = 0; j < 23 - i; j++) {
+      if (tasks[j].delay_ms > tasks[j+1].delay_ms) {
+        ClockTask temp = tasks[j];
+        tasks[j] = tasks[j+1];
+        tasks[j+1] = temp;
+      }
+    }
+  }
+
+  unsigned long start_time = millis();
+  for (int i = 0; i < 24; i++) {
+    int c = tasks[i].c;
+    int r = tasks[i].r;
+
+    // Wait until it's time to trigger this clock
+    while (millis() - start_time < (unsigned long)tasks[i].delay_ms) {
+       update_MDNS();
+       handle_webclient();
+       if (is_ota_in_progress()) return;
+       delay(5);
+    }
+
+    int board = c;
+    int clock_idx = r;
+
+    // Get target angle from final_clock
+    int digit_idx = board / 2;
+    int half_idx = board % 2;
+    
+    int target_h = final_clock.digit[digit_idx].halfs[half_idx].clocks[clock_idx].angle_h;
+    int target_m = final_clock.digit[digit_idx].halfs[half_idx].clocks[clock_idx].angle_m;
+
+    set_single_clock_target(board, clock_idx, target_h, target_m);
+  }
 }
 
 void set_attract()
