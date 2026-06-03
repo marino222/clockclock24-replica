@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <TimeLib.h>
 #include <math.h>
+#include <algorithm>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979f
@@ -241,23 +242,6 @@ void set_chaos()
   set_clock_time(last_hour, last_minute);
 }
 
-
-
-void set_circle()
-{
-  /*TODO*/
-}
-
-
-/**
- * Returns the angle (degrees, 0 = right, CW+) for a hand at grid
- * position (x, y) pointing toward the attractor at (cx, cy).
- */
-float get_angle_to_attractor(int x, int y, float cx, float cy)
-{
-  return atan2(cy - y, cx - x) * 180.0f / M_PI;
-}
-
 /**
  * Returns the outward-ripple delay (ms) for a clock at grid position (x, y).
  * x: 1 to 8 (column), y: 1 to 3 (row).
@@ -270,6 +254,124 @@ int calculate_start_delay(int x, int y, float speed_multiplier)
   float d = speed_multiplier * (distance - 0.5f);
   return d > 0 ? (int)d : 0;
 }
+
+
+/**
+ * @brief Calculates the dynamic offset angle (theta) for a vector pair to create an attractor field illusion.
+ *
+ * This function computes the required angular offset between the inward-pointing 
+ * radial line (from the current grid index to the array center) and the physical 
+ * unit vectors. By linearly interpolating between an inner and outer angular bound 
+ * based on the Euclidean distance from the center, it generates a sweeping "V-shape" 
+ * that transitions from a sharp inward pinch near the center to a wide, circular 
+ * tangent near the edges of the grid.
+ * * Use the bound parameters to control the shape (softness/pointiness) of the attractor field
+ *
+ * @param x             The horizontal index in the array grid (e.g., 1 to 8).
+ * @param y             The vertical index in the array grid (e.g., 1 to 3).
+ * @param inner_bound   The minimum offset angle applied at the exact center. Smaller values create a tighter V-shape.
+ * @param outer_bound   The maximum offset angle applied at the maximum radius. Values near 90 degrees create a circular tangent.
+ * @return float        The calculated offset angle (theta). To get the absolute angles for the physical motors, add and subtract 
+ * this value from the base inward radial angle.
+ */
+float calculateAttractorAngle(float x, float y, float inner_bound, float outer_bound) {
+  const float centerX = 4.5f;
+  const float centerY = 2.0f;
+  
+  // Pre-calculated maximum distance from center (4.5, 2.0) to corner (1.0, 1.0)
+  // sqrt((3.5 * 3.5) + (1.0 * 1.0))
+  const float maxDistance = 3.64005f; 
+
+  float dx = x - centerX;
+  float dy = y - centerY;
+  float distance = sqrtf(dx * dx + dy * dy);
+
+  // Normalize distance to [0,1], clamped to prevent minor floating point over-extensions
+  float t = distance / maxDistance; 
+  if (t > 1.0f) t = 1.0f;
+
+  return inner_bound + t * (outer_bound - inner_bound);
+}
+
+/**
+ * @brief Calculates the absolute target angle for a specific motor in the 0 to 360 degree range.
+ *
+ * Computes the base inward radial angle from the specified (x, y) grid index to 
+ * the center of the array. It applies the provided dynamic offset (theta) based 
+ * on which motor is being calculated, and normalizes the final result to a 
+ * standard Cartesian angle (0 to 360 degrees, counterclockwise from the positive x-axis).
+ *
+ * @param x             The horizontal index in the grid (e.g., 1 to 8).
+ * @param y             The vertical index in the grid (e.g., 1 to 3).
+ * @param theta         The dynamic offset angle calculated for this coordinate's V-shape.
+ * @param is_hour_hand  True to calculate the hour hand (adds theta), 
+ * False to calculate the minute hand (subtracts theta).
+ * @return float        The absolute target angle in degrees, strictly bounded [0.0, 360.0).
+ */
+float calculateAbsoluteMotorAngle(float x, float y, float theta, bool is_hour_hand) {
+  const float centerX = 4.5f;
+  const float centerY = 2.0f;
+
+  // atan2f uses (y, x). Multiply by 180/PI to convert to degrees.
+  float base_angle = atan2f(centerY - y, centerX - x) * 57.29578f;
+
+  float adjusted_angle = is_hour_hand ? base_angle + theta : base_angle - theta;
+
+  // Mathematically robust normalization to strict [0, 360) range AND CW inversion
+  float normalized_angle = fmodf(adjusted_angle, 360.0f);
+  if (normalized_angle < 0) {
+      normalized_angle += 360.0f;
+  }
+
+  // Invert CCW to CW for the physical motors
+  return fmodf((360.0f - normalized_angle), 360.0f);
+}
+
+void set_circle()
+{
+  const int SETUP_WAIT_MS = 10000;   // ms: reach attractor field + pause
+  const float DELAY_SPEED = 300.0f; // ms: per unit grid distance (ripple speed)
+  const int PHASE1_SPEED = 500;     // motor speed for phase 1
+  const int PHASE1_ACCEL = 150;     // motor acceleration for phase 1
+  const int PHASE2_SPEED = 400;     // motor speed for phase 2
+  const int PHASE2_ACCEL = 100;     // motor acceleration for phase 2
+  const float INNER_BOUND = 70.0f;  // degrees: minimum angle offset at center (controls V-shape pointiness)
+  const float OUTER_BOUND = 85.0f;  // degrees: maximum angle offset at edges (values near 90 create circular tangent)
+
+  // Phase 1: All hands move to angles that form a circle pattern
+  uint16_t angles_phase1[24][2]; //24 clock with each 2 hands: stores individual angles
+  for (int i = 0; i < 24; i++) {
+    int c = i / 3; // column (0 to 7)
+    int r = i % 3; // row (0 to 2)
+
+    // Calculate dynamic theta for this clock's position to create the attractor field illusion
+    float theta = calculateAttractorAngle(c + 1, r + 1, INNER_BOUND, OUTER_BOUND);
+
+    // Calculate distinct absolute angles for both hands
+    float target_hour = calculateAbsoluteMotorAngle(c + 1.0f, r + 1.0f, theta, true);
+    float target_minute = calculateAbsoluteMotorAngle(c + 1.0f, r + 1.0f, theta, false);
+
+    // Round floats to nearest integer and cast to uint16_t
+    angles_phase1[i][0] = static_cast<uint16_t>(std::round(target_minute));
+    angles_phase1[i][1] = static_cast<uint16_t>(std::round(target_hour));
+  }
+  set_custom_clock(angles_phase1, PHASE1_SPEED, PHASE1_ACCEL, MIN_DISTANCE);
+  _delay(SETUP_WAIT_MS); // Wait for setup
+
+  set_clock_time(last_hour, last_minute);
+
+}
+
+
+/**
+ * Returns the angle (degrees, 0 = right, CW+) for a hand at grid
+ * position (x, y) pointing toward the attractor at (cx, cy).
+ */
+float get_angle_to_attractor(int x, int y, float cx, float cy)
+{
+  return atan2(cy - y, cx - x) * 180.0f / M_PI;
+}
+
 
 void set_spiral()
 {
