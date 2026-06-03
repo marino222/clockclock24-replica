@@ -601,7 +601,7 @@ function setCircle(time) {
   const SPIN_SEC    = 24        // s: duration of counter-rotating spin phase
   const FINAL_SEC   = 10        // s: duration to settle into final digits
   const DELAY_SPEED = 800       // ms per unit of grid distance (controls ripple speed)
-  const SPINS       = 3         // number of full counter-rotations per hand
+  const SPINS       = 2         // number of full counter-rotations per hand
 
   const SETUP_WAIT = SETUP_SEC * 1500
 
@@ -659,8 +659,8 @@ function setCircle(time) {
         const clockId = c * 3 + r
         const anim = anim_state[Math.floor(c / 2)][r + (c % 2) * 3]
         const rot = 360 * SPINS
-        if (c < 4) { anim[0] += rot; anim[1] += rot }  // cols 1-4: CW
-        else        { anim[0] -= rot; anim[1] -= rot }  // cols 5-8: CCW
+        if (c < 4) { anim[0] -= rot; anim[1] += rot }  // cols 1-4: CW
+        else        { anim[0] -= rot; anim[1] += rot }  // cols 5-8: CCW
         setHands(clockId, anim[0], anim[1], SPIN_SEC)
       }, SETUP_WAIT + delay)
     }
@@ -746,6 +746,7 @@ function setSpiral(time) {
   }, SETUP_WAIT + WAIT_MS + maxDelay + (SPIN_SEC - FINAL_SEC) * 1000)
 }
 
+//this animation looks shit and needs to be redone
 function setAttract(time) {
   const SETUP_SEC   = 3        // s: hands reach initial position
   const SETUP_WAIT  = SETUP_SEC * 1000 + 500
