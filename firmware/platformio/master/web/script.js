@@ -65,9 +65,9 @@ function genModes() {
   document.getElementById("modes").innerHTML = html
 }
 
-/** Renders the animation buttons (WAVE / CHAOS / CIRCLE / SPIRAL / ATTRACT / CYCLE) into #animations. */
+/** Renders the animation buttons (WAVE / CHAOS / CIRCLE / SPIRAL / LOOM / STAR / CYCLE) into #animations. */
 function genAnimations() {
-  let anims = ["WAVE", "CHAOS", "CIRCLE", "SPIRAL", "ATTRACT", "LOOM", "CYCLE"]
+  let anims = ["WAVE", "CHAOS", "CIRCLE", "SPIRAL", "LOOM", "STAR", "CYCLE"]
   let html = ""
   let i = 0
   for (let a of anims)
@@ -379,6 +379,11 @@ Middle row points both hands in the same horizontal direction (to the right)
 const digit_loom = [
   [0, 180], [0, 0], [0, 180],
   [0, 180], [0, 0], [0, 180]
+]
+
+const digit_star = [
+  [315, 315], [45, 45], [315, 315],
+  [225, 225], [135, 135], [225, 225]
 ]
 
 // Digit shapes 0–9; each entry is six [hourAngle, minuteAngle] pairs in reading order
@@ -756,72 +761,6 @@ function setSpiral(time) {
   }, SETUP_WAIT + WAIT_MS + maxDelay + (SPIN_SEC - FINAL_SEC) * 1000)
 }
 
-//this animation looks shit and needs to be redone
-function setAttract(time) {
-  const SETUP_SEC = 3        // s: hands reach initial position
-  const SETUP_WAIT = SETUP_SEC * 1000 + 500
-  const TRAVEL_SPD = 1      // grid units per second
-  const UPDATE_MS = 80       // ms between position updates
-  const STEP_SEC = 0.15     // s: CSS transition per step (> UPDATE_MS for smooth trail)
-  const FINAL_SEC = 4        // s: settle into digit positions
-
-  // Outer perimeter: (0,0)→(9,0)→(9,4)→(0,4)→(0,0), just outside the clock grid (x:1–8, y:1–3)
-  const waypoints = [[0, 0], [9, 0], [9, 4], [0, 4], [0, 0]]
-
-  // Move all clocks to point at (cx, cy), both hands overlapping, shortest path
-  function updateHandsToAttractor(cx, cy, sec) {
-    for (let c = 0; c < 8; c++) {
-      for (let r = 0; r < 3; r++) {
-        const angle = getAngleToAttractor(c + 1, r + 1, cx, cy)
-        const target = (360 - ((angle % 360) + 360) % 360) % 360
-        const clockId = c * 3 + r
-        const curr = current_state[Math.floor(c / 2)][r + (c % 2) * 3]
-        const anim = anim_state[Math.floor(c / 2)][r + (c % 2) * 3]
-        for (let hand = 0; hand < 2; hand++) {
-          const d1 = calcAngleCW(curr[hand], target)
-          const d2 = calcAngleCCW(curr[hand], target)
-          if (d1 <= d2) {
-            curr[hand] = (curr[hand] + d1) % 360
-            anim[hand] -= d1
-          } else {
-            curr[hand] = (curr[hand] - d2 + 360) % 360
-            anim[hand] += d2
-          }
-        }
-        setHands(clockId, anim[0], anim[1], sec)
-      }
-    }
-  }
-
-  // Phase 1: align to initial attractor position
-  updateHandsToAttractor(0, 0, SETUP_SEC)
-
-  // Build position sequence for the rectangle path
-  const positions = []
-  for (let i = 0; i < waypoints.length - 1; i++) {
-    const [x0, y0] = waypoints[i], [x1, y1] = waypoints[i + 1]
-    const dx = x1 - x0, dy = y1 - y0
-    const dist = Math.sqrt(dx * dx + dy * dy)
-    const steps = Math.ceil(dist / TRAVEL_SPD * 1000 / UPDATE_MS)
-    for (let s = 0; s < steps; s++) {
-      const t = s / steps
-      positions.push([x0 + dx * t, y0 + dy * t])
-    }
-  }
-
-  // Phase 2: schedule all tracking updates
-  for (let s = 0; s < positions.length; s++) {
-    setTimeout(() => {
-      updateHandsToAttractor(positions[s][0], positions[s][1], STEP_SEC)
-    }, SETUP_WAIT + s * UPDATE_MS)
-  }
-
-  // Phase 3: transition to time display — current_state is exact so shortest-path is seamless
-  setTimeout(() => {
-    for (let i = 0; i < 4; i++)
-      setDigit(i, digits[time.charAt(i)], DIR_MIN, FINAL_SEC)
-  }, SETUP_WAIT + positions.length * UPDATE_MS)
-}
 
 /*
 The animation begins with all clock hands aligned to form a solid horizontal block. 
@@ -833,7 +772,7 @@ function setLoom(time) {
   const SPIN_SEC = 16;
   const FINAL_SEC = 6;
   const SPINS = 2;
-  const SETUP_WAIT = SETUP_SEC * 1000 + 500;
+  const SETUP_WAIT = SETUP_SEC * 1500;
 
   for (let i = 0; i < 4; i++)
     setDigit(i, digit_loom, DIR_MIN, SETUP_SEC);
@@ -864,6 +803,47 @@ function setLoom(time) {
   }, SETUP_WAIT + (SPIN_SEC - FINAL_SEC) * 1000);
 }
 
+/*
+The animation begins with all clock hands pointing straight up. 
+Then, the top and bottom rows fold outward in opposite directions while the center row rotates in the same direction, smoothly transitioning the entire display into a diagonal cross pattern.
+*/
+function setStar(time) {
+  const SETUP_SEC = 2;
+  const SPIN_SEC = 10;
+  const FINAL_SEC = 3;
+  const SETUP_WAIT = SETUP_SEC * 1500;
+
+  // Phase 1: Move all clocks to point at center (0,0) using the "star" pattern digits
+  for (let i = 0; i < 4; i++)
+    setDigit(i, digit_star, DIR_MIN, SETUP_SEC);
+
+  setTimeout(() => {
+    for (let c = 0; c < 8; c++) {
+      for (let r = 0; r < 3; r++) {
+        const clockId = c * 3 + r;
+        const anim = anim_state[Math.floor(c / 2)][r + (c % 2) * 3];
+        const rot = 360;
+
+        if (c % 2 === 0) { // Left half of digit
+          anim[0] += rot;
+          anim[1] -= rot;
+        } else { // Right half of digit
+          anim[0] -= rot;
+          anim[1] += rot;
+        }
+
+        setHands(clockId, anim[0], anim[1], SPIN_SEC);
+      }
+    }
+  }, SETUP_WAIT);
+
+  // Phase 2: Transition to final digit shapes
+  setTimeout(() => {
+    for (let i = 0; i < 4; i++)
+      setDigit(i, digits[time.charAt(i)], DIR_MIN, FINAL_SEC);
+  }, SETUP_WAIT + (SPIN_SEC - FINAL_SEC) * 1000);
+}
+
 // ─── Clock Loop ───────────────────────────────────────────────
 /** Routes to the active animation function; advances the cycle index when CYCLE is active. */
 function dispatchAnimation(time) {
@@ -874,8 +854,8 @@ function dispatchAnimation(time) {
     case 1: setChaos(time); break
     case 2: setCircle(time); break
     case 3: setSpiral(time); break
-    case 4: setAttract(time); break
-    case 5: setLoom(time); break
+    case 4: setLoom(time); break
+    case 5: setStar(time); break
   }
 }
 

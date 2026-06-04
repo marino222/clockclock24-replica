@@ -31,8 +31,8 @@ enum clock_animations
   CHAOS = 1,
   CIRCLE = 2,
   SPIRAL = 3,
-  ATTRACT = 4,
-  LOOM = 5,
+  LOOM = 4,
+  STAR = 5,
   CYCLE = 6
 };
 

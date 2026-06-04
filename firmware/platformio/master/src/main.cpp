@@ -83,6 +83,11 @@ void set_attract();
 void set_loom();
 
 /**
+ * Sets clock time using star animation
+*/
+void set_star();
+
+/**
  * Sets clock to stop state
 */
 void stop();
@@ -210,9 +215,9 @@ void set_animated()
     case WAVE:   set_waves();  break;
     case CHAOS:    set_chaos();    break;
     case CIRCLE: set_circle(); break;
-    case ATTRACT: set_attract(); break;
     case SPIRAL: set_spiral(); break;
     case LOOM: set_loom(); break;
+    case STAR: set_star(); break;
   }
 }
 
@@ -335,9 +340,9 @@ float calculateAbsoluteMotorAngle(float x, float y, float theta, bool is_hour_ha
 
 void set_circle()
 {
-  const int SETUP_WAIT_MS = 10000;   // ms: reach attractor field + pause
+  const int SETUP_WAIT_MS = 9000;   // ms: reach attractor field + pause
   const float DELAY_SPEED = 300.0f; // ms: per unit grid distance (ripple speed)
-  const int PHASE1_SPEED = 500;     // motor speed for phase 1
+  const int PHASE1_SPEED = 600;     // motor speed for phase 1
   const int PHASE1_ACCEL = 150;     // motor acceleration for phase 1
   const int PHASE2_SPEED = 400;     // motor speed for phase 2
   const int PHASE2_ACCEL = 100;     // motor acceleration for phase 2
@@ -436,7 +441,7 @@ float get_angle_to_attractor(int x, int y, float cx, float cy)
 
 void set_spiral()
 {
-  const int SETUP_WAIT_MS = 9000;   // ms: reach attractor field + pause
+  const int SETUP_WAIT_MS = 8000;   // ms: reach attractor field + pause
   const float DELAY_SPEED = 300.0f; // ms: per unit grid distance (ripple speed)
   const int PHASE1_SPEED = 500;     // motor speed for phase 1
   const int PHASE1_ACCEL = 150;     // motor acceleration for phase 1
@@ -519,83 +524,6 @@ void set_spiral()
   }
 }
 
-void set_attract()
-{
-  const int SETUP_WAIT_MS = 3500;  // ms: hands reach initial position
-  const float TRAVEL_SPD = 1.0f;   // grid units per second
-  const int UPDATE_MS = 150;       // ms between position updates (slower for physical stability)
-  const int TRACKING_SPEED = 800;  // high speed for quick tracking adjustments
-  const int TRACKING_ACCEL = 500;  
-  
-  uint16_t angles[24][2];
-
-  // Phase 1: Align to initial attractor position (0,0)
-  for (int i = 0; i < 24; i++) {
-    int c = i / 3;
-    int r = i % 3;
-    float angle = get_angle_to_attractor(c + 1, r + 1, 0.0f, 0.0f);
-    int target = (int)round(360.0f - angle) % 360;
-    if (target < 0) target += 360;
-    angles[i][0] = target;
-    angles[i][1] = target;
-  }
-  set_custom_clock(angles, 400, 150, MIN_DISTANCE);
-  _delay(SETUP_WAIT_MS);
-
-  // Phase 2: Follow rectangle path (0,0) -> (9,0) -> (9,4) -> (0,4) -> (0,0)
-  const float waypoints[5][2] = {
-    {0.0f, 0.0f},
-    {9.0f, 0.0f},
-    {9.0f, 4.0f},
-    {0.0f, 4.0f},
-    {0.0f, 0.0f}
-  };
-
-  for (int i = 0; i < 4; i++) {
-    float x0 = waypoints[i][0];
-    float y0 = waypoints[i][1];
-    float x1 = waypoints[i+1][0];
-    float y1 = waypoints[i+1][1];
-    
-    float dx = x1 - x0;
-    float dy = y1 - y0;
-    float dist = sqrt(dx*dx + dy*dy);
-    
-    int steps = ceil((dist / TRAVEL_SPD) * 1000.0f / UPDATE_MS);
-
-    for (int s = 0; s < steps; s++) {
-      float t = (float)s / steps;
-      float cx = x0 + dx * t;
-      float cy = y0 + dy * t;
-
-      for (int c_idx = 0; c_idx < 24; c_idx++) {
-        int c = c_idx / 3;
-        int r = c_idx % 3;
-        float angle = get_angle_to_attractor(c + 1, r + 1, cx, cy);
-        int target = (int)round(360.0f - angle) % 360;
-        if (target < 0) target += 360;
-        angles[c_idx][0] = target;
-        angles[c_idx][1] = target;
-      }
-
-      unsigned long step_start = millis();
-      set_custom_clock(angles, TRACKING_SPEED, TRACKING_ACCEL, MIN_DISTANCE);
-      
-      while (millis() - step_start < (unsigned long)UPDATE_MS) {
-        update_MDNS();
-        handle_webclient();
-        if (is_ota_in_progress()) return;
-        delay(5);
-      }
-    }
-  }
-
-  // Phase 3: Transition to final time
-  set_speed(400);
-  set_acceleration(150);
-  set_direction(MIN_DISTANCE);
-  set_clock_time(last_hour, last_minute);
-}
 
 void set_waves()
 {
@@ -638,8 +566,8 @@ void stop()
  */
 void set_loom()
 {
-  const int SETUP_WAIT_MS = 5000;
-  const int PHASE1_SPEED = 400;
+  const int SETUP_WAIT_MS = 10000;
+  const int PHASE1_SPEED = 600;
   const int PHASE1_ACCEL = 100;
 
   // Phase 1: All hands move to the loom starting position
@@ -679,6 +607,62 @@ void set_loom()
       // Top and Middle rows: Hour CCW, Minute CW
       dir_h = COUNTERCLOCKWISE2;
       dir_m = CLOCKWISE2;
+    }
+
+    set_single_clock_target_dir(board, clock_idx, target_h, target_m, dir_h, dir_m);
+  }
+}
+
+/**
+ * @brief Sets clock time using the star animation.
+ * 
+ * The animation begins by moving all clock hands into a diagonal star pattern. 
+ * Then, the left and right halves of each digit spin in opposite directions, 
+ * smoothly transitioning the entire display into the current time.
+ */
+void set_star(){
+  const int SETUP_WAIT_MS = 10000;
+  const int PHASE1_SPEED = 600;
+  const int PHASE1_ACCEL = 100;
+
+  const int PHASE2_SPEED = 400;
+  const int PHASE2_ACCEL = 100;
+
+  // Phase 1: Move all clocks to point at center using the "star" pattern digits
+  set_speed(PHASE1_SPEED);
+  set_acceleration(PHASE1_ACCEL);
+  set_direction(MIN_DISTANCE);
+  set_clock(d_star);
+
+  _delay(SETUP_WAIT_MS);
+
+  // Phase 2 & 3: Spin and seamlessly settle on current time
+  set_speed(PHASE2_SPEED);
+  set_acceleration(PHASE2_ACCEL);
+
+  t_full_clock final_clock = get_clock_state_from_time(last_hour, last_minute);
+
+  for (int i = 0; i < 24; i++) {
+    int board = i / 3;
+    int clock_idx = i % 3;
+
+    int digit_idx = board / 2;
+    int half_idx = board % 2;
+
+    int target_h = final_clock.digit[digit_idx].halfs[half_idx].clocks[clock_idx].angle_h;
+    int target_m = final_clock.digit[digit_idx].halfs[half_idx].clocks[clock_idx].angle_m;
+
+    int dir_h, dir_m;
+
+    // The left half and right half spin in opposite directions
+    if (half_idx == 0) { 
+      // Left half: Hour CW, Minute CCW
+      dir_h = CLOCKWISE3;
+      dir_m = COUNTERCLOCKWISE3;
+    } else { 
+      // Right half: Hour CCW, Minute CW
+      dir_h = COUNTERCLOCKWISE3;
+      dir_m = CLOCKWISE3;
     }
 
     set_single_clock_target_dir(board, clock_idx, target_h, target_m, dir_h, dir_m);

@@ -148,4 +148,16 @@ const t_digit digit_loom = {
 
 const t_full_clock d_loom = {digit_loom, digit_loom, digit_loom, digit_loom};
 
+const t_digit digit_star = {
+  315, 315,
+  45, 45,
+  315, 315,
+  225, 225,
+  135, 135,
+  225, 225
+};
+
+
+const t_full_clock d_star = {digit_star, digit_star, digit_star, digit_star};
+
 #endif
