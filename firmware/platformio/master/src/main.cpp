@@ -78,6 +78,11 @@ void set_spiral();
 void set_attract();
 
 /**
+ * Sets clock time using loom animation
+*/
+void set_loom();
+
+/**
  * Sets clock to stop state
 */
 void stop();
@@ -207,6 +212,7 @@ void set_animated()
     case CIRCLE: set_circle(); break;
     case ATTRACT: set_attract(); break;
     case SPIRAL: set_spiral(); break;
+    case LOOM: set_loom(); break;
   }
 }
 
@@ -216,12 +222,12 @@ int advance_cycle()
   if (get_cycle_type() == RANDOM_ORDER)
   {
     uint32_t seed = (uint32_t)(hour() * 60 + minute());
-    anim = (int)((seed * 2654435761UL) % 5);
+    anim = (int)((seed * 2654435761UL) % 6);
   }
   else
   {
     anim = current_cycle_index;
-    current_cycle_index = (current_cycle_index + 1) % 5;
+    current_cycle_index = (current_cycle_index + 1) % 6;
   }
   return anim;
 }
@@ -430,7 +436,7 @@ float get_angle_to_attractor(int x, int y, float cx, float cy)
 
 void set_spiral()
 {
-  const int SETUP_WAIT_MS = 10000;   // ms: reach attractor field + pause
+  const int SETUP_WAIT_MS = 9000;   // ms: reach attractor field + pause
   const float DELAY_SPEED = 300.0f; // ms: per unit grid distance (ripple speed)
   const int PHASE1_SPEED = 500;     // motor speed for phase 1
   const int PHASE1_ACCEL = 150;     // motor acceleration for phase 1
@@ -623,6 +629,62 @@ void stop()
   }
 }
 
+/**
+ * @brief Sets clock time using the loom animation.
+ * 
+ * The animation begins with all clock hands aligned to form a solid horizontal block. 
+ * The rows then fold outward, spinning in opposite directions (with the top and bottom rows 
+ * spinning oppositely), seamlessly transitioning into the vertical digits of the current time.
+ */
+void set_loom()
+{
+  const int SETUP_WAIT_MS = 5000;
+  const int PHASE1_SPEED = 400;
+  const int PHASE1_ACCEL = 100;
+
+  // Phase 1: All hands move to the loom starting position
+  set_speed(PHASE1_SPEED);
+  set_acceleration(PHASE1_ACCEL);
+  set_direction(MIN_DISTANCE);
+  set_clock(d_loom);
+
+  _delay(SETUP_WAIT_MS);
+
+  const int PHASE2_SPEED = 400;
+  const int PHASE2_ACCEL = 100;
+
+  // Phase 2 & 3: Spin hands in opposite directions and settle on current time
+  set_speed(PHASE2_SPEED);
+  set_acceleration(PHASE2_ACCEL);
+  
+  t_full_clock final_clock = get_clock_state_from_time(last_hour, last_minute);
+
+  for (int i = 0; i < 24; i++) {
+    int board = i / 3;
+    int clock_idx = i % 3;
+
+    int digit_idx = board / 2;
+    int half_idx = board % 2;
+
+    int target_h = final_clock.digit[digit_idx].halfs[half_idx].clocks[clock_idx].angle_h;
+    int target_m = final_clock.digit[digit_idx].halfs[half_idx].clocks[clock_idx].angle_m;
+
+    int dir_h, dir_m;
+    // Bottom row spins opposite to Top and Middle rows
+    if (clock_idx == 2) { 
+      // Bottom row: Hour CW, Minute CCW
+      dir_h = CLOCKWISE2;
+      dir_m = COUNTERCLOCKWISE2;
+    } else { 
+      // Top and Middle rows: Hour CCW, Minute CW
+      dir_h = COUNTERCLOCKWISE2;
+      dir_m = CLOCKWISE2;
+    }
+
+    set_single_clock_target_dir(board, clock_idx, target_h, target_m, dir_h, dir_m);
+  }
+}
+
 void i2c_scan()
 {
   Serial.println("\n--- I2C Scanner ---");
@@ -695,3 +757,4 @@ void _delay(int value)
     delay(value/100);
   }
 }
+

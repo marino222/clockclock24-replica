@@ -32,7 +32,8 @@ enum clock_animations
   CIRCLE = 2,
   SPIRAL = 3,
   ATTRACT = 4,
-  CYCLE = 5
+  LOOM = 5,
+  CYCLE = 6
 };
 
 /**

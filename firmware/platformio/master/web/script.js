@@ -1,56 +1,56 @@
 // ─── Constants ────────────────────────────────────────────────
-const CLOCK_INTERVAL_MS    = 500;   // setTime polling cadence
-const SLEEP_DEBOUNCE_MS    = 1500;  // aggregation delay before sending sleep changes
-const RELOAD_DELAY_MS      = 2000;  // time to reload page after saving connection settings
+const CLOCK_INTERVAL_MS = 500;   // setTime polling cadence
+const SLEEP_DEBOUNCE_MS = 1500;  // aggregation delay before sending sleep changes
+const RELOAD_DELAY_MS = 2000;  // time to reload page after saving connection settings
 
 // Wave animation timing
-const WAVE_PHASE1_MS       = 7000;  // wait for hands to settle vertical before spin phase
-const WAVE_PHASE2_MS       = 9000;  // duration of spin phase
-const WAVE_STEP_DELAY_MS   = 400;   // per-column ripple step delay
+const WAVE_PHASE1_MS = 7000;  // wait for hands to settle vertical before spin phase
+const WAVE_PHASE2_MS = 9000;  // duration of spin phase
+const WAVE_STEP_DELAY_MS = 400;   // per-column ripple step delay
 
 // Hand travel direction for setHalfDigit(). The base type selects which arc to travel;
 // the variant suffix (0 / 1 / 2) adds 0 / 1 / 2 extra full 360° rotations for a spin effect.
-const DIR_CW        = 0;   // clockwise
-const DIR_CW_SPIN1  = 1;   // clockwise + 1 full spin
-const DIR_CW_SPIN2  = 2;   // clockwise + 2 full spins
-const DIR_CCW       = 3;   // counter-clockwise
+const DIR_CW = 0;   // clockwise
+const DIR_CW_SPIN1 = 1;   // clockwise + 1 full spin
+const DIR_CW_SPIN2 = 2;   // clockwise + 2 full spins
+const DIR_CCW = 3;   // counter-clockwise
 const DIR_CCW_SPIN1 = 4;   // counter-clockwise + 1 full spin
 const DIR_CCW_SPIN2 = 5;   // counter-clockwise + 2 full spins
-const DIR_MIN       = 6;   // shortest arc
+const DIR_MIN = 6;   // shortest arc
 const DIR_MIN_SPIN1 = 7;   // shortest arc + 1 full spin
 const DIR_MIN_SPIN2 = 8;   // shortest arc + 2 full spins
-const DIR_MAX       = 9;   // longest arc
+const DIR_MAX = 9;   // longest arc
 const DIR_MAX_SPIN1 = 10;  // longest arc + 1 full spin
 const DIR_MAX_SPIN2 = 11;  // longest arc + 2 full spins
 
 // ─── State ────────────────────────────────────────────────────
 // Sleep schedule: [7 days][24 hours], 1 = clock sleeps that hour
 let sleep = [Array(24).fill(0), Array(24).fill(0), Array(24).fill(0), Array(24).fill(0),
-             Array(24).fill(0), Array(24).fill(0), Array(24).fill(0)]
+Array(24).fill(0), Array(24).fill(0), Array(24).fill(0)]
 
-let selectedMode       = 0          // 0=OFF, 1=LAZY, 2=ANIMATED
-let selectedAnimation  = 0          // 0=WAVE, 1=CHAOS, 2=CIRCLE, 3=SPIRAL, 4=ATTRACT, 5=CYCLE
-let selectedCycleType  = 0          // 0=SEQUENTIAL, 1=RANDOM
-let currentCycleIndex  = 0          // cycle position, mirrors firmware state
-let selectedClock      = undefined  // index of the clock with visible overlay buttons
-let selectedDay        = undefined  // index of the active day in the sleep schedule
+let selectedMode = 0          // 0=OFF, 1=LAZY, 2=ANIMATED
+let selectedAnimation = 0          // 0=WAVE, 1=CHAOS, 2=CIRCLE, 3=SPIRAL, 4=ATTRACT, 5=CYCLE
+let selectedCycleType = 0          // 0=SEQUENTIAL, 1=RANDOM
+let currentCycleIndex = 0          // cycle position, mirrors firmware state
+let selectedClock = undefined  // index of the clock with visible overlay buttons
+let selectedDay = undefined  // index of the active day in the sleep schedule
 let selectedConnection = undefined  // 0=HOTSPOT, 1=EXTERNAL
-let ssid               = ""
-let password           = ""
+let ssid = ""
+let password = ""
 
 // ─── DOM Generation ──────────────────────────────────────────
 /** Returns the HTML for a single clock: an SVG face with four adjustment buttons. */
 function clock(index) {
   return (
     `<div id="clock-${index}" class="clock-box hidden">` +
-      `<svg class="clock clock--${index}" width="100" height="100" viewBox="0 0 100 100" onclick="selectClock(${index})">` +
-        `<path class="clock-smallHand" d="M50,47 C48.3431458,47 47,48.3431458 47,50 C47,51.6568542 48.3431458,53 50,53 L95,53 L95,47 L50,47 Z" stroke="none" fill="#FFF" fill-rule="evenodd"></path>` +
-        `<path class="clock-largeHand" d="M50,47 C48.3431458,47 47,48.3431458 47,50 C47,51.6568542 48.3431458,53 50,53 L100,53 L100,47 L50,47 Z" stroke="none" fill="#FFF" fill-rule="evenodd"></path>` +
-      `</svg>` +
-      `<div class="btn-clock btn-clock-tl" onclick="adjustHand(${index}, 0, 1)">H+</div>` +
-      `<div class="btn-clock btn-clock-tr" onclick="adjustHand(${index}, 1, 0)">M+</div>` +
-      `<div class="btn-clock btn-clock-bl" onclick="adjustHand(${index}, 0, -1)">H-</div>` +
-      `<div class="btn-clock btn-clock-br" onclick="adjustHand(${index}, -1, 0)">M-</div>` +
+    `<svg class="clock clock--${index}" width="100" height="100" viewBox="0 0 100 100" onclick="selectClock(${index})">` +
+    `<path class="clock-smallHand" d="M50,47 C48.3431458,47 47,48.3431458 47,50 C47,51.6568542 48.3431458,53 50,53 L95,53 L95,47 L50,47 Z" stroke="none" fill="#FFF" fill-rule="evenodd"></path>` +
+    `<path class="clock-largeHand" d="M50,47 C48.3431458,47 47,48.3431458 47,50 C47,51.6568542 48.3431458,53 50,53 L100,53 L100,47 L50,47 Z" stroke="none" fill="#FFF" fill-rule="evenodd"></path>` +
+    `</svg>` +
+    `<div class="btn-clock btn-clock-tl" onclick="adjustHand(${index}, 0, 1)">H+</div>` +
+    `<div class="btn-clock btn-clock-tr" onclick="adjustHand(${index}, 1, 0)">M+</div>` +
+    `<div class="btn-clock btn-clock-bl" onclick="adjustHand(${index}, 0, -1)">H-</div>` +
+    `<div class="btn-clock btn-clock-br" onclick="adjustHand(${index}, -1, 0)">M-</div>` +
     `</div>`
   )
 }
@@ -67,7 +67,7 @@ function genModes() {
 
 /** Renders the animation buttons (WAVE / CHAOS / CIRCLE / SPIRAL / ATTRACT / CYCLE) into #animations. */
 function genAnimations() {
-  let anims = ["WAVE", "CHAOS", "CIRCLE", "SPIRAL", "ATTRACT", "CYCLE"]
+  let anims = ["WAVE", "CHAOS", "CIRCLE", "SPIRAL", "ATTRACT", "LOOM", "CYCLE"]
   let html = ""
   let i = 0
   for (let a of anims)
@@ -84,7 +84,7 @@ function genCycleOptions() {
   for (let t of types)
     html += `<div id="cycle-${i}" class="btn ${i === selectedCycleType ? "active" : ""}" onclick="selectCycleType(${i++})">${t}</div>`
   document.getElementById("cycle-options").innerHTML = html
-  if (selectedAnimation === 5)
+  if (selectedAnimation === 6)
     document.getElementById("cycle-options").classList.remove("hidden")
   else
     document.getElementById("cycle-options").classList.add("hidden")
@@ -371,18 +371,28 @@ const digit_II = [
   [270, 90], [270, 90], [270, 90]
 ]
 
+/*
+Starting position for the "Loom" animation.
+Top and bottom rows point both hands exactly horizontal in opposite directions
+Middle row points both hands in the same horizontal direction (to the right)
+*/
+const digit_loom = [
+  [0, 180], [0, 0], [0, 180],
+  [0, 180], [0, 0], [0, 180]
+]
+
 // Digit shapes 0–9; each entry is six [hourAngle, minuteAngle] pairs in reading order
 const digits = [
-  [ /* 0 */ [270,   0], [270,  90], [  0,  90], [270, 180], [270,  90], [180,  90] ],
-  [ /* 1 */ [225, 225], [225, 225], [225, 225], [270, 270], [270,  90], [ 90,  90] ],
-  [ /* 2 */ [  0,   0], [270,   0], [ 90,   0], [180, 270], [ 90, 180], [180, 180] ],
-  [ /* 3 */ [  0,   0], [  0,   0], [  0,   0], [180, 270], [180,  90], [180,  90] ],
-  [ /* 4 */ [270, 270], [ 90,   0], [225, 225], [270, 270], [270,  90], [ 90,  90] ],
-  [ /* 5 */ [270,   0], [ 90,   0], [  0,   0], [180, 180], [270, 180], [ 90, 180] ],
-  [ /* 6 */ [270,   0], [270,  90], [ 90,   0], [180, 180], [270, 180], [ 90, 180] ],
-  [ /* 7 */ [  0,   0], [225, 225], [225, 225], [270, 180], [270,  90], [ 90,  90] ],
-  [ /* 8 */ [270,   0], [ 90,   0], [ 90,   0], [270, 180], [ 90, 180], [ 90, 180] ],
-  [ /* 9 */ [270,   0], [  0,  90], [  0,   0], [270, 180], [270,  90], [ 90, 180] ]
+  [ /* 0 */[270, 0], [270, 90], [0, 90], [270, 180], [270, 90], [180, 90]],
+  [ /* 1 */[225, 225], [225, 225], [225, 225], [270, 270], [270, 90], [90, 90]],
+  [ /* 2 */[0, 0], [270, 0], [90, 0], [180, 270], [90, 180], [180, 180]],
+  [ /* 3 */[0, 0], [0, 0], [0, 0], [180, 270], [180, 90], [180, 90]],
+  [ /* 4 */[270, 270], [90, 0], [225, 225], [270, 270], [270, 90], [90, 90]],
+  [ /* 5 */[270, 0], [90, 0], [0, 0], [180, 180], [270, 180], [90, 180]],
+  [ /* 6 */[270, 0], [270, 90], [90, 0], [180, 180], [270, 180], [90, 180]],
+  [ /* 7 */[0, 0], [225, 225], [225, 225], [270, 180], [270, 90], [90, 90]],
+  [ /* 8 */[270, 0], [90, 0], [90, 0], [270, 180], [90, 180], [90, 180]],
+  [ /* 9 */[270, 0], [0, 90], [0, 0], [270, 180], [270, 90], [90, 180]]
 ]
 
 // ─── Animation Engine ─────────────────────────────────────────
@@ -392,7 +402,7 @@ const digits = [
 //   CSS transitions animate the difference between consecutive values, so this must
 //   never be snapped — only incrementally updated.
 // Both are shaped [4 digits][6 clocks per digit][2 hands: hour, minute].
-let anim_state    = Array(4).fill().map(() => Array(6).fill().map(() => [90, 90]))
+let anim_state = Array(4).fill().map(() => Array(6).fill().map(() => [90, 90]))
 let current_state = Array(4).fill().map(() => Array(6).fill().map(() => [270, 270]))
 
 /** Sets the CSS animation target for one clock SVG. */
@@ -498,7 +508,7 @@ function setHalfDigit(index, values, direction, secs) {
  * @param {number}     secs      CSS transition duration in seconds
  */
 function setDigit(index, digit, direction, secs) {
-  setHalfDigit(index * 2,     digit.slice(0, 3), direction, secs)
+  setHalfDigit(index * 2, digit.slice(0, 3), direction, secs)
   setHalfDigit(index * 2 + 1, digit.slice(3, 6), direction, secs)
 }
 
@@ -588,7 +598,7 @@ function computeVectorAngle(x, y, vectorIndex, innerAngle = 90, outerAngle = 90)
  */
 function calculateHandAngles(x, y, innerAngle = 90, outerAngle = 90) {
   return {
-    hourAngle:   Math.round(computeVectorAngle(x, y, 0, innerAngle, outerAngle)),
+    hourAngle: Math.round(computeVectorAngle(x, y, 0, innerAngle, outerAngle)),
     minuteAngle: Math.round(computeVectorAngle(x, y, 1, innerAngle, outerAngle))
   }
 }
@@ -597,11 +607,11 @@ function calculateHandAngles(x, y, innerAngle = 90, outerAngle = 90) {
 function setCircle(time) {
   const INNER_ANGLE = 70        // hand spread at center (degrees from inward direction)
   const OUTER_ANGLE = 80        // hand spread at edge — equal = uniform tangential diameter
-  const SETUP_SEC   = 3         // s: duration to reach start positions
-  const SPIN_SEC    = 24        // s: duration of counter-rotating spin phase
-  const FINAL_SEC   = 10        // s: duration to settle into final digits
+  const SETUP_SEC = 3         // s: duration to reach start positions
+  const SPIN_SEC = 24        // s: duration of counter-rotating spin phase
+  const FINAL_SEC = 10        // s: duration to settle into final digits
   const DELAY_SPEED = 800       // ms per unit of grid distance (controls ripple speed)
-  const SPINS       = 2         // number of full counter-rotations per hand
+  const SPINS = 2         // number of full counter-rotations per hand
 
   const SETUP_WAIT = SETUP_SEC * 1500
 
@@ -612,7 +622,7 @@ function setCircle(time) {
   for (let c = 0; c < 8; c++) {
     for (let r = 0; r < 3; r++) {
       const { hourAngle, minuteAngle } = calculateHandAngles(c + 1, r + 1, INNER_ANGLE, OUTER_ANGLE)
-      const targetH = (360 - ((hourAngle   % 360) + 360) % 360) % 360
+      const targetH = (360 - ((hourAngle % 360) + 360) % 360) % 360
       const targetM = (360 - ((minuteAngle % 360) + 360) % 360) % 360
       const clockId = c * 3 + r
       const curr = current_state[Math.floor(c / 2)][r + (c % 2) * 3]
@@ -660,7 +670,7 @@ function setCircle(time) {
         const anim = anim_state[Math.floor(c / 2)][r + (c % 2) * 3]
         const rot = 360 * SPINS
         if (c < 4) { anim[0] -= rot; anim[1] += rot }  // cols 1-4: CW
-        else        { anim[0] -= rot; anim[1] += rot }  // cols 5-8: CCW
+        else { anim[0] -= rot; anim[1] += rot }  // cols 5-8: CCW
         setHands(clockId, anim[0], anim[1], SPIN_SEC)
       }, SETUP_WAIT + delay)
     }
@@ -686,12 +696,12 @@ function getAngleToAttractor(x, y, cx, cy) {
 
 /** Displays the time with a spiral: attractor-field alignment → column-split spin ripple → settle to digits. */
 function setSpiral(time) {
-  const SETUP_SEC   = 3     // s: reach attractor field positions
-  const WAIT_MS     = 1500  // ms: pause after attractor field forms
-  const SPIN_SEC    = 24    // s: spin phase duration
-  const FINAL_SEC   = 11    // s: settle into digits
+  const SETUP_SEC = 3     // s: reach attractor field positions
+  const WAIT_MS = 1500  // ms: pause after attractor field forms
+  const SPIN_SEC = 24    // s: spin phase duration
+  const FINAL_SEC = 11    // s: settle into digits
   const DELAY_SPEED = 300   // ms per unit grid distance (ripple speed)
-  const SPINS       = 3     // full rotations before settling
+  const SPINS = 3     // full rotations before settling
 
   const SETUP_WAIT = SETUP_SEC * 1000  // buffer beyond SETUP_SEC for CSS to settle
 
@@ -699,7 +709,7 @@ function setSpiral(time) {
   // Each clock's hands point toward center (4.5, 2.0) via the shortest arc.
   for (let c = 0; c < 8; c++) {
     for (let r = 0; r < 3; r++) {
-      const angle  = getAngleToAttractor(c + 1, r + 1, 4.5, 2.0)
+      const angle = getAngleToAttractor(c + 1, r + 1, 4.5, 2.0)
       const target = (360 - ((angle % 360) + 360) % 360) % 360  // CSS → current_state
       const clockId = c * 3 + r
       const curr = current_state[Math.floor(c / 2)][r + (c % 2) * 3]
@@ -748,21 +758,21 @@ function setSpiral(time) {
 
 //this animation looks shit and needs to be redone
 function setAttract(time) {
-  const SETUP_SEC   = 3        // s: hands reach initial position
-  const SETUP_WAIT  = SETUP_SEC * 1000 + 500
-  const TRAVEL_SPD  = 1      // grid units per second
-  const UPDATE_MS   = 80       // ms between position updates
-  const STEP_SEC    = 0.15     // s: CSS transition per step (> UPDATE_MS for smooth trail)
-  const FINAL_SEC   = 4        // s: settle into digit positions
+  const SETUP_SEC = 3        // s: hands reach initial position
+  const SETUP_WAIT = SETUP_SEC * 1000 + 500
+  const TRAVEL_SPD = 1      // grid units per second
+  const UPDATE_MS = 80       // ms between position updates
+  const STEP_SEC = 0.15     // s: CSS transition per step (> UPDATE_MS for smooth trail)
+  const FINAL_SEC = 4        // s: settle into digit positions
 
   // Outer perimeter: (0,0)→(9,0)→(9,4)→(0,4)→(0,0), just outside the clock grid (x:1–8, y:1–3)
-  const waypoints = [[0,0],[9,0],[9,4],[0,4],[0,0]]
+  const waypoints = [[0, 0], [9, 0], [9, 4], [0, 4], [0, 0]]
 
   // Move all clocks to point at (cx, cy), both hands overlapping, shortest path
   function updateHandsToAttractor(cx, cy, sec) {
     for (let c = 0; c < 8; c++) {
       for (let r = 0; r < 3; r++) {
-        const angle  = getAngleToAttractor(c + 1, r + 1, cx, cy)
+        const angle = getAngleToAttractor(c + 1, r + 1, cx, cy)
         const target = (360 - ((angle % 360) + 360) % 360) % 360
         const clockId = c * 3 + r
         const curr = current_state[Math.floor(c / 2)][r + (c % 2) * 3]
@@ -791,11 +801,11 @@ function setAttract(time) {
   for (let i = 0; i < waypoints.length - 1; i++) {
     const [x0, y0] = waypoints[i], [x1, y1] = waypoints[i + 1]
     const dx = x1 - x0, dy = y1 - y0
-    const dist = Math.sqrt(dx*dx + dy*dy)
+    const dist = Math.sqrt(dx * dx + dy * dy)
     const steps = Math.ceil(dist / TRAVEL_SPD * 1000 / UPDATE_MS)
     for (let s = 0; s < steps; s++) {
       const t = s / steps
-      positions.push([x0 + dx*t, y0 + dy*t])
+      positions.push([x0 + dx * t, y0 + dy * t])
     }
   }
 
@@ -813,17 +823,59 @@ function setAttract(time) {
   }, SETUP_WAIT + positions.length * UPDATE_MS)
 }
 
+/*
+The animation begins with all clock hands aligned to form a solid horizontal block. 
+The top and bottom rows then fold outward in opposite directions while the center row rotates synchronously, smoothly transitioning the entire display into vertical columns. 
+This fluid, mechanical movement creates a mesmerizing visual effect that mimics rhythmic breathing or the steady flapping of wings.
+*/
+function setLoom(time) {
+  const SETUP_SEC = 3;
+  const SPIN_SEC = 16;
+  const FINAL_SEC = 6;
+  const SPINS = 2;
+  const SETUP_WAIT = SETUP_SEC * 1000 + 500;
+
+  for (let i = 0; i < 4; i++)
+    setDigit(i, digit_loom, DIR_MIN, SETUP_SEC);
+
+  setTimeout(() => {
+    for (let c = 0; c < 8; c++) {
+      for (let r = 0; r < 3; r++) {
+        const clockId = c * 3 + r;
+        const anim = anim_state[Math.floor(c / 2)][r + (c % 2) * 3];
+        const rot = 360 * SPINS;
+
+        if (r === 2) { // Bottom row
+          anim[0] += rot;
+          anim[1] -= rot;
+        } else { // Top and middle rows
+          anim[0] -= rot;
+          anim[1] += rot;
+        }
+
+        setHands(clockId, anim[0], anim[1], SPIN_SEC);
+      }
+    }
+  }, SETUP_WAIT);
+
+  setTimeout(() => {
+    for (let i = 0; i < 4; i++)
+      setDigit(i, digits[time.charAt(i)], DIR_MIN, FINAL_SEC);
+  }, SETUP_WAIT + (SPIN_SEC - FINAL_SEC) * 1000);
+}
+
 // ─── Clock Loop ───────────────────────────────────────────────
 /** Routes to the active animation function; advances the cycle index when CYCLE is active. */
 function dispatchAnimation(time) {
   let anim = selectedAnimation
-  if (anim === 5) anim = advanceCycle()
+  if (anim === 6) anim = advanceCycle()
   switch (anim) {
-    case 0: setWaves(time);  break
-    case 1: setChaos(time);    break
+    case 0: setWaves(time); break
+    case 1: setChaos(time); break
     case 2: setCircle(time); break
     case 3: setSpiral(time); break
     case 4: setAttract(time); break
+    case 5: setLoom(time); break
   }
 }
 
@@ -840,10 +892,10 @@ function advanceCycle() {
   if (selectedCycleType === 1) {
     const d = new Date()
     const seed = d.getHours() * 60 + d.getMinutes()
-    anim = ((seed * 2654435761) >>> 0) % 5
+    anim = ((seed * 2654435761) >>> 0) % 6
   } else {
     anim = currentCycleIndex
-    currentCycleIndex = (currentCycleIndex + 1) % 5
+    currentCycleIndex = (currentCycleIndex + 1) % 6
   }
   return anim
 }
@@ -853,8 +905,8 @@ let lastTime  // last time string rendered, used to detect minute changes
 /** Checks if the current minute has changed and dispatches the appropriate display update. */
 function setTime() {
   const d = new Date();
-  const time  = d.toTimeString().substring(0, 5).replace(':', '')
-  const day   = (d.getDay() + 6) % 7
+  const time = d.toTimeString().substring(0, 5).replace(':', '')
+  const day = (d.getDay() + 6) % 7
   const hours = d.getHours()
   if (time !== lastTime && sleep[day][hours] === 0) {
     lastTime = time

@@ -51,7 +51,7 @@ void debug_print_half_digit(int index, const t_half_digit &hd)
   for (int i = 0; i < 3; i++)
   {
     const t_clock &c = hd.clocks[i];
-    Serial.printf("  clock %d: angle_h=%3d, angle_m=%3d, "
+    Serial.printf("clock %d: angle_h=%3d, angle_m=%3d, "
                   "speed_h=%4d, speed_m=%4d, "
                   "accel_h=%4d, accel_m=%4d, "
                   "mode_h=%d, mode_m=%d, "

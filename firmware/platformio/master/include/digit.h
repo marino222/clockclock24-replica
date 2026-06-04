@@ -137,4 +137,15 @@ const t_full_clock d_fun = {digit_fun, digit_fun, digit_fun, digit_fun};
 
 const t_full_clock d_IIII = {digit_I, digit_I, digit_I, digit_I};
 
+const t_digit digit_loom = {
+  0, 180,
+  0, 0,
+  0, 180,
+  0, 180,
+  0, 0,
+  0, 180
+};
+
+const t_full_clock d_loom = {digit_loom, digit_loom, digit_loom, digit_loom};
+
 #endif
