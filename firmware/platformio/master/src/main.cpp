@@ -355,11 +355,66 @@ void set_circle()
     angles_phase1[i][0] = static_cast<uint16_t>(std::round(target_minute));
     angles_phase1[i][1] = static_cast<uint16_t>(std::round(target_hour));
   }
+
   set_custom_clock(angles_phase1, PHASE1_SPEED, PHASE1_ACCEL, MIN_DISTANCE);
   _delay(SETUP_WAIT_MS); // Wait for setup
 
-  set_clock_time(last_hour, last_minute);
+  // Phase 2 + 3: Ripple spin to final digits
+  set_speed(PHASE2_SPEED);
+  set_acceleration(PHASE2_ACCEL);
 
+  t_full_clock final_clock = get_clock_state_from_time(last_hour, last_minute);
+
+  // Sort the 24 clocks by delay
+  struct ClockTask {
+    int c; //column
+    int r; //row
+    int delay_ms;
+  } tasks[24];
+
+  for (int i = 0; i < 24; i++) {
+    tasks[i].c = i / 3;
+    tasks[i].r = i % 3;
+    tasks[i].delay_ms = calculate_start_delay(tasks[i].c + 1, tasks[i].r + 1, DELAY_SPEED);
+  }
+
+  // Bubble sort tasks by delay
+  for (int i = 0; i < 23; i++) {
+    for (int j = 0; j < 23 - i; j++) {
+      if (tasks[j].delay_ms > tasks[j+1].delay_ms) {
+        ClockTask temp = tasks[j];
+        tasks[j] = tasks[j+1];
+        tasks[j+1] = temp;
+      }
+    }
+  }
+
+  unsigned long start_time = millis();
+  for (int i = 0; i < 24; i++) {
+    int c = tasks[i].c;
+    int r = tasks[i].r;
+
+    // Wait until it's time to trigger this clock
+    while (millis() - start_time < (unsigned long)tasks[i].delay_ms) {
+       update_MDNS();
+       handle_webclient();
+       if (is_ota_in_progress()) return;
+       delay(5);
+    }
+
+    int board = c;
+    int clock_idx = r;
+
+    // Get target angle from final_clock
+    int digit_idx = board / 2;
+    int half_idx = board % 2;
+
+    int target_h = final_clock.digit[digit_idx].halfs[half_idx].clocks[clock_idx].angle_h;
+    int target_m = final_clock.digit[digit_idx].halfs[half_idx].clocks[clock_idx].angle_m;
+
+    // Spin hands in opposite directions: Hour hand CW, Minute hand CCW
+    set_single_clock_target_dir(board, clock_idx, target_h, target_m, CLOCKWISE2, COUNTERCLOCKWISE2);
+  }
 }
 
 
@@ -403,7 +458,7 @@ void set_spiral()
   // Phase 2 + 3: Ripple spin to final digits
   set_speed(PHASE2_SPEED);
   set_acceleration(PHASE2_ACCEL);
-  set_direction(CLOCKWISE3);
+  set_direction(CLOCKWISE2);
 
   t_full_clock final_clock = get_clock_state_from_time(last_hour, last_minute);
 

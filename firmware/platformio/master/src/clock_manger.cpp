@@ -202,6 +202,23 @@ void set_single_clock_target(int board, int clock, int angle_h, int angle_m)
   _counter++;
 }
 
+void set_single_clock_target_dir(int board, int clock, int angle_h, int angle_m, int dir_h, int dir_m)
+{
+  t_half_digit tmp = _last_state[board];
+  tmp.clocks[clock].angle_h = ((angle_h % 360) + 360) % 360;
+  tmp.clocks[clock].angle_m = ((angle_m % 360) + 360) % 360;
+  tmp.clocks[clock].mode_h = dir_h;
+  tmp.clocks[clock].mode_m = dir_m;
+  tmp.clocks[clock].speed_h = _speed;
+  tmp.clocks[clock].speed_m = _speed;
+  tmp.clocks[clock].accel_h = _acceleration;
+  tmp.clocks[clock].accel_m = _acceleration;
+  tmp.change_counter[clock] = _counter;
+  send_half_digit(board, tmp);
+  _last_state[board] = tmp;
+  _counter++;
+}
+
 static void test_single_clock(int board, int clock,
   bool has_angle_h, int angle_h,
   bool has_angle_m, int angle_m,

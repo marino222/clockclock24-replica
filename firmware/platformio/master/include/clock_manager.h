@@ -123,6 +123,18 @@ t_full_clock get_clock_state_from_time(int h, int m);
 */
 void set_single_clock_target(int board, int clock, int angle_h, int angle_m);
 
+/**
+ * Sets the target angle and rotation direction for a single clock independently for both hands.
+ * This enables the hands to spin in different modes (e.g. opposite directions).
+ * @param board     board index (0 <= index < 8)
+ * @param clock     clock index on the board (0 <= index < 3)
+ * @param angle_h   target hour angle
+ * @param angle_m   target minute angle
+ * @param dir_h     rotation direction/mode for the hour hand
+ * @param dir_m     rotation direction/mode for the minute hand
+*/
+void set_single_clock_target_dir(int board, int clock, int angle_h, int angle_m, int dir_h, int dir_m);
+
 /** 
  * @param clock_index   single clock index (0 <= index < 24)
  * @param h_amount      hours hand degree of adjustment
