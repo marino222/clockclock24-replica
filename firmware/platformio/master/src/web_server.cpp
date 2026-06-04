@@ -64,6 +64,7 @@ void server_start()
   _server.on("/time", HTTP_POST, handle_post_time);
   _server.on("/adjust", HTTP_POST, handle_post_adjust);
   _server.on("/mode", HTTP_POST, handle_post_mode);
+  _server.on("/animation", HTTP_POST, handle_post_animation);
   _server.on("/sleep", HTTP_POST, handle_post_sleep);
   _server.on("/connection", HTTP_POST, handle_post_connection);
   _server.on("/test/all", HTTP_POST, handle_post_test_all);
@@ -108,13 +109,16 @@ void handle_get_config()
         strncat(s_time,"," , sizeof(2));
     }
     strncat(s_time, "]", sizeof(2));
-    snprintf(payload, sizeof(payload), 
+    snprintf(payload, sizeof(payload),
       "{\"clock_mode\":%d,"
+      "\"clock_animation\":%d,"
+      "\"cycle_type\":%d,"
       "\"wireless_mode\":%d,"
       "\"ssid\":\"%s\","
       "\"password\":\"%s\","
       "\"sleep_time\":%s}",
-      get_clock_mode(), get_connection_mode(), get_ssid(), get_password(), s_time);
+      get_clock_mode(), get_clock_animation(), get_cycle_type(),
+      get_connection_mode(), get_ssid(), get_password(), s_time);
   }
   _server.send(200, "application/json", payload);
 }
@@ -170,6 +174,16 @@ void handle_post_mode()
   Serial.println("Handle POST /mode");
   if (_server.hasArg("mode"))
     set_clock_mode(_server.arg("mode").toInt());
+  _server.send(200, "text/plain", "");
+}
+
+void handle_post_animation()
+{
+  Serial.println("Handle POST /animation");
+  if (_server.hasArg("animation"))
+    set_clock_animation(_server.arg("animation").toInt());
+  if (_server.hasArg("cycle_type"))
+    set_cycle_type(_server.arg("cycle_type").toInt());
   _server.send(200, "text/plain", "");
 }
 

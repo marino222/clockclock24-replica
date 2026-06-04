@@ -42,7 +42,7 @@ void set_direction(int value)
   _direction = value;
 }
 
-// Debug-Ausgabe: zeigt, was an ein Half-Digit-Board gesendet wird
+
 void debug_print_half_digit(int index, const t_half_digit &hd)
 {
   Serial.printf("[I2C] Board %d (Addr %d), state_counter ~ %lu\n",
@@ -51,7 +51,7 @@ void debug_print_half_digit(int index, const t_half_digit &hd)
   for (int i = 0; i < 3; i++)
   {
     const t_clock &c = hd.clocks[i];
-    Serial.printf("  clock %d: angle_h=%3d, angle_m=%3d, "
+    Serial.printf("clock %d: angle_h=%3d, angle_m=%3d, "
                   "speed_h=%4d, speed_m=%4d, "
                   "accel_h=%4d, accel_m=%4d, "
                   "mode_h=%d, mode_m=%d, "
@@ -69,8 +69,6 @@ void debug_print_half_digit(int index, const t_half_digit &hd)
 
 void send_half_digit(int index, t_half_digit half_digit)
 {
-  // Debug-Ausgabe VOR dem Senden
-  //debug_print_half_digit(index, half_digit);
 
   Wire.beginTransmission(index + I2C_FIRST_SLAVE_ADDR);
   I2C_writeAnything(half_digit);
@@ -143,6 +141,23 @@ void set_clock_time(int h, int m)
   set_clock(get_clock_state_from_time(h, m));
 }
 
+void set_custom_clock(const uint16_t angles[24][2], int speed, int accel, int direction)
+{
+  set_speed(speed);
+  set_acceleration(accel);
+  set_direction(direction);
+  t_full_clock clock = {0};
+  for (int i = 0; i < 24; i++)
+  {
+    int d = i / 6;
+    int h = (i % 6) / 3;
+    int c = i % 3;
+    clock.digit[d].halfs[h].clocks[c].angle_h = angles[i][0];
+    clock.digit[d].halfs[h].clocks[c].angle_m = angles[i][1];
+  }
+  set_clock(clock);
+}
+
 t_full_clock get_clock_state_from_time(int h, int m)
 {
   int d0 = h / 10;
@@ -167,6 +182,40 @@ void adjust_hands(int clock_index, int h_amount, int m_amount)
   tmp.clocks[clock_index % 3].accel_m = 5000;
   tmp.change_counter[clock_index % 3] = _counter;
   send_half_digit(clock_index/3, tmp);
+  _counter++;
+}
+
+void set_single_clock_target(int board, int clock, int angle_h, int angle_m)
+{
+  t_half_digit tmp = _last_state[board];
+  tmp.clocks[clock].angle_h = ((angle_h % 360) + 360) % 360;
+  tmp.clocks[clock].angle_m = ((angle_m % 360) + 360) % 360;
+  tmp.clocks[clock].mode_h = _direction;
+  tmp.clocks[clock].mode_m = _direction;
+  tmp.clocks[clock].speed_h = _speed;
+  tmp.clocks[clock].speed_m = _speed;
+  tmp.clocks[clock].accel_h = _acceleration;
+  tmp.clocks[clock].accel_m = _acceleration;
+  tmp.change_counter[clock] = _counter;
+  send_half_digit(board, tmp);
+  _last_state[board] = tmp;
+  _counter++;
+}
+
+void set_single_clock_target_dir(int board, int clock, int angle_h, int angle_m, int dir_h, int dir_m)
+{
+  t_half_digit tmp = _last_state[board];
+  tmp.clocks[clock].angle_h = ((angle_h % 360) + 360) % 360;
+  tmp.clocks[clock].angle_m = ((angle_m % 360) + 360) % 360;
+  tmp.clocks[clock].mode_h = dir_h;
+  tmp.clocks[clock].mode_m = dir_m;
+  tmp.clocks[clock].speed_h = _speed;
+  tmp.clocks[clock].speed_m = _speed;
+  tmp.clocks[clock].accel_h = _acceleration;
+  tmp.clocks[clock].accel_m = _acceleration;
+  tmp.change_counter[clock] = _counter;
+  send_half_digit(board, tmp);
+  _last_state[board] = tmp;
   _counter++;
 }
 

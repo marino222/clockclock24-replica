@@ -92,12 +92,19 @@ void set_digit(int index, t_digit digit);
 */
 void set_half_digit(int index, t_half_digitl half);
 
-/** 
+/**
  * Sets the specified time on the clock
  * @param h     hour
  * @param m     minute
 */
 void set_clock_time(int h, int m);
+
+/**
+ * Sets all 24 clocks with per-clock angle pairs using a shared speed/accel/direction.
+ * angles[i] = {hour_hand_angle, minute_hand_angle} for clock i (0-23).
+ * Clock order: digit 0 half 0 clocks 0-2, digit 0 half 1 clocks 0-2, ..., digit 3 half 1 clocks 0-2.
+ */
+void set_custom_clock(const uint16_t angles[24][2], int speed, int accel, int direction);
 
 /** 
  * Returns a full clock state from time
@@ -106,6 +113,27 @@ void set_clock_time(int h, int m);
  * @return full clock state
 */
 t_full_clock get_clock_state_from_time(int h, int m);
+
+/**
+ * Sets the target angle for a single clock (within a board) without changing others.
+ * @param board     board index (0 <= index < 8)
+ * @param clock     clock index on the board (0 <= index < 3)
+ * @param angle_h   target hour angle
+ * @param angle_m   target minute angle
+*/
+void set_single_clock_target(int board, int clock, int angle_h, int angle_m);
+
+/**
+ * Sets the target angle and rotation direction for a single clock independently for both hands.
+ * This enables the hands to spin in different modes (e.g. opposite directions).
+ * @param board     board index (0 <= index < 8)
+ * @param clock     clock index on the board (0 <= index < 3)
+ * @param angle_h   target hour angle
+ * @param angle_m   target minute angle
+ * @param dir_h     rotation direction/mode for the hour hand
+ * @param dir_m     rotation direction/mode for the minute hand
+*/
+void set_single_clock_target_dir(int board, int clock, int angle_h, int angle_m, int dir_h, int dir_m);
 
 /** 
  * @param clock_index   single clock index (0 <= index < 24)
