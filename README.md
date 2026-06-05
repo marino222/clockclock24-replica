@@ -2,10 +2,7 @@
 
 This project is a hardware and software replica of the kinetic art piece "ClockClock 24" by *Humans Since 1982*, inspired by and building upon the work of [Vallasc](https://github.com/Vallasc/clockclock24-replica) with several hardware modifications and improvements. The clock features 24 double-shaft stepper motors arranged in an 8x3 matrix, with motors grouped in sets of three on custom PCBs, of which there are eight in total. Each board is controlled by a Raspberry Pi Pico microcontroller acting as a slave, while all slave boards communicate with a central ESP32 master via the I2C protocol. The ESP32 also provides a web interface for remote control and configuration.
 
-
-
-https://github.com/user-attachments/assets/cac66124-e24e-4972-81f7-14d6262385bf
-
+https://github.com/user-attachments/assets/afd09497-f928-4de0-870f-ff79c54d2813
 
 ---
 
