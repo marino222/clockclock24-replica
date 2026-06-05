@@ -2,11 +2,15 @@
 
 This project is a hardware and software replica of the kinetic art piece "ClockClock 24" by *Humans Since 1982*, inspired by and building upon the work of [Vallasc](https://github.com/Vallasc/clockclock24-replica) with several hardware modifications and improvements. The clock features 24 double-shaft stepper motors arranged in an 8x3 matrix, with motors grouped in sets of three on custom PCBs, of which there are eight in total. Each board is controlled by a Raspberry Pi Pico microcontroller acting as a slave, while all slave boards communicate with a central ESP32 master via the I2C protocol. The ESP32 also provides a web interface for remote control and configuration.
 
-<video src="./docs/animations/chaos_intro.mp4" controls="controls" muted="muted" width="100%" autoplay="autoplay" loop="loop"></video>
+
+
+https://github.com/user-attachments/assets/cac66124-e24e-4972-81f7-14d6262385bf
+
 
 ---
 
 ## Table of Contents
+
 1. [Repository Structure](#repository-structure)
 2. [Hardware](#hardware)
     1. [Electronics](#electronics)
@@ -309,14 +313,32 @@ When the **Cycle** animation is selected, the clock rotates through the availabl
 
 ### Animations
 
-| Description | Animation |
-|-------------|-----|
-| Chaos | <video src="./docs/animations/chaos.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
-| Waves | <video src="./docs/animations/waves.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
-| Circle | <video src="./docs/animations/circle.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
-| Spiral | <video src="./docs/animations/spiral.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
-| Loom | <video src="./docs/animations/loom.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
-| Star | <video src="./docs/animations/star.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
+#### Star
+
+https://github.com/user-attachments/assets/974c3be4-1d8c-499e-901f-cf6359da658e
+
+#### Loom
+
+https://github.com/user-attachments/assets/a73ca92e-b080-4c7b-8e86-1c2305fc6c1c
+
+#### Sprial
+
+https://github.com/user-attachments/assets/7440f7f9-dbd7-41e6-ab2a-407f3a3d8da3
+
+#### Circle
+
+https://github.com/user-attachments/assets/f53467dd-9c30-4d9d-ac92-7847988e9c31
+
+#### Waves
+
+https://github.com/user-attachments/assets/cff895c9-7d88-41c0-b8b3-85d1ee7fd593
+
+#### Chaos
+
+https://github.com/user-attachments/assets/0f3a5fa1-277e-4495-aa6d-477161758a04
+
+
+
 
 
 ## Credits
