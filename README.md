@@ -2,6 +2,8 @@
 
 This project is a hardware and software replica of the kinetic art piece "ClockClock 24" by *Humans Since 1982*, inspired by and building upon the work of [Vallasc](https://github.com/Vallasc/clockclock24-replica) with several hardware modifications and improvements. The clock features 24 double-shaft stepper motors arranged in an 8x3 matrix, with motors grouped in sets of three on custom PCBs, of which there are eight in total. Each board is controlled by a Raspberry Pi Pico microcontroller acting as a slave, while all slave boards communicate with a central ESP32 master via the I2C protocol. The ESP32 also provides a web interface for remote control and configuration.
 
+<video src="./docs/animations/chaos_intro.mp4" controls="controls" muted="muted" width="100%" autoplay="autoplay" loop="loop"></video>
+
 ---
 
 ## Table of Contents
@@ -238,14 +240,14 @@ Because of build-volume restrictions on my 3D printer, each clamp consists of mu
 
 ### Master
 
-The master firmware runs on an ESP32 microcontroller and serves as the central brain of the clock system. Its primary responsibilities include:
+The master firmware runs on an ESP32 microcontroller and acts as the central brain of the clock. Its main responsibilities include:
 
-- **Time Synchronization**: Connects to WiFi and retrieves the current time via NTP (Network Time Protocol), automatically handling time zones and daylight saving time adjustments
-- **I2C Communication**: Acts as the I2C master, sending synchronized commands to all eight slave boards to coordinate motor movements
-- **Web Server**: Hosts a responsive web interface accessible via the ESP32's IP address, allowing users to control the clock remotely
-- **Clock Logic**: Orchestrates the display logic, calculating which motor positions are needed to form digits and managing transitions between different display modes
+- **Time Synchronization**: Automatically connects to WiFi to retrieve the current time, ensuring the clock is always accurate and handles time zones and daylight saving time seamlessly.
+- **Clock Logic**: Orchestrates the movements of all clock hands, deciding exactly what positions they need to be in to display the time or play animations.
+- **Communication**: Sends synchronized instructions to all eight slave boards so the 24 motors move perfectly together.
+- **Web Server**: Hosts a web interface that allows you to configure and control the clock from any device.
 
-The master code is built using PlatformIO with the Arduino framework and can be configured for different WiFi networks and time zones.
+The master code is built using PlatformIO with the Arduino framework.
 
 ### Slave
 
@@ -280,19 +282,41 @@ The master controller sends commands to each board sequentially as seen in [`clo
 
 ### Web Interface
 
-The web interface provides an intuitive control panel for the ClockClock 24, built using HTML, CSS, and JavaScript. It offers the following features:
+The web interface is hosted directly on the ESP32 and provides an intuitive control panel for the ClockClock 24. To access it, simply connect to the same WiFi network as the ESP32 and navigate to its IP address in your browser. 
 
-- **Real-Time Clock Control**: Display the current time with smooth transitions between minutes
-- **WiFi Configuration**: Configure network credentials and connection settings directly through the web UI
-- **Display Modes**: Switch between different modes including time display, custom patterns, animations, and demo sequences
-- **Manual Control**: Ability to manually position individual clock hands for testing and calibration purposes
-- **System Status**: View connection status, current time, and system information
+The UI provides the following features:
+- **Live Preview**: View a real-time digital representation of what the physical clock is currently displaying.
+- **Mode & Animation Selection**: Easily switch between the normal time display, various choreographies, or run test animations.
+- **Sleep Time Configuration**: Define specific days and hours when the clock should stop moving to save power and reduce noise.
+- **Wireless Configuration**: Seamlessly switch between the clock's own Hotspot mode or connect it to your home WiFi network.
+- **Firmware Update**: Perform Over-The-Air (OTA) firmware updates directly from your browser.
 
-To access the web interface, connect to the same WiFi network as the ESP32 and navigate to its IP address in any web browser. The interface is responsive and works on both desktop and mobile devices.
+The web interface is built using standard HTML, CSS, and JavaScript. Because the ESP32 has limited storage, a custom Node.js script is used to compress the web files. Before building the firmware, running `npm run minimize` minifies the UI files and converts them into a single, optimized C++ header file, which is then flashed onto the microcontroller.
 
-For more information about the firmware, see the [firmware README](firmware/README.md).
+For more technical details about the firmware, see the [firmware README](firmware/README.md).
 
+### Clock Modes
 
+The clock can operate in three distinct modes, which can be selected via the web interface:
+- **OFF**: All clock hands move to a resting position (pointing straight down) and remain stationary.
+- **LAZY**: A minimalist mode where the clock hands take the shortest, most direct path to the new time every minute, without any complex choreographies.
+- **ANIMATED**: Every minute, the clock performs a choreography before settling on the new time. You can choose a specific animation or use the **Cycle** mode.
+
+#### Cycle Mode & Randomness
+When the **Cycle** animation is selected, the clock rotates through the available choreographies instead of playing the same one every minute. You have two options for how it cycles:
+- **SEQ (Sequential)**: Plays the animations in a fixed order, cycling to the next one every minute.
+- **RAND (Random)**: Plays a "random" animation each minute. Interestingly, this randomness is deterministic and based on the current time (a hash of the current minute of the day). This means the clock will always play the exact same animation, as the Web Interface.
+
+### Animations
+
+| Description | Animation |
+|-------------|-----|
+| Chaos | <video src="./docs/animations/chaos.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
+| Waves | <video src="./docs/animations/waves.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
+| Circle | <video src="./docs/animations/circle.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
+| Spiral | <video src="./docs/animations/spiral.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
+| Loom | <video src="./docs/animations/loom.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
+| Star | <video src="./docs/animations/star.mp4" controls="controls" muted="muted" width="60%" autoplay="autoplay" loop="loop"></video> |
 
 
 ## Credits
