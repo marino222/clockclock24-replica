@@ -44,6 +44,7 @@ ClockClock 24 Replica/
 │   ├── arduino/
 │   │   ├── AdvancedBoardTest/
 │   │   ├── BoardTest/
+|   |   ├── SerialBoardTest/
 │   │   └── SpeedoDriveTest/
 │   ├── platformio/
 │   │   ├── master/
