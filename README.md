@@ -314,12 +314,12 @@ When the **Cycle** animation is selected, the clock rotates through the availabl
 
 | Description      | Animation |
 | ----------- | ----------- |
-| Chaos | <img width="800" height="450" alt="chaos" src="https://github.com/user-attachments/assets/e29897ab-4f4e-4fe6-9859-ebd2666d46cb" /> |
-| Waves | <img width="800" height="450" alt="waves" src="https://github.com/user-attachments/assets/e16ad3b4-2f62-4ef9-ab85-b16ec1aede60" /> |
-| Circle | <img width="800" height="371" alt="circle" src="https://github.com/user-attachments/assets/6b4b8353-2990-417c-9432-9ce0a07b15ce" /> |
-| Spiral | <img width="800" height="450" alt="spiral" src="https://github.com/user-attachments/assets/fec7f138-3832-4b30-ba87-df4e90728056" /> |
-| Loom | <img width="800" height="450" alt="loom" src="https://github.com/user-attachments/assets/c3bc31cb-95cf-4cef-8ab1-a3840b1b90d0" /> |
-| Star | <img width="800" height="450" alt="star" src="https://github.com/user-attachments/assets/15269d1d-2127-4562-b4bb-fc945e29363d" /> |
+| Chaos | <img width="700" height="350" alt="chaos" src="https://github.com/user-attachments/assets/e29897ab-4f4e-4fe6-9859-ebd2666d46cb" /> |
+| Waves | <img width="700" height="350" alt="waves" src="https://github.com/user-attachments/assets/e16ad3b4-2f62-4ef9-ab85-b16ec1aede60" /> |
+| Circle | <img width="700" height="271" alt="circle" src="https://github.com/user-attachments/assets/6b4b8353-2990-417c-9432-9ce0a07b15ce" /> |
+| Spiral | <img width="700" height="350" alt="spiral" src="https://github.com/user-attachments/assets/fec7f138-3832-4b30-ba87-df4e90728056" /> |
+| Loom | <img width="700" height="350" alt="loom" src="https://github.com/user-attachments/assets/c3bc31cb-95cf-4cef-8ab1-a3840b1b90d0" /> |
+| Star | <img width="700" height="350" alt="star" src="https://github.com/user-attachments/assets/15269d1d-2127-4562-b4bb-fc945e29363d" /> |
 
 
 
