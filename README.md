@@ -2,7 +2,8 @@
 
 This project is a hardware and software replica of the kinetic art piece "ClockClock 24" by *Humans Since 1982*, inspired by and building upon the work of [Vallasc](https://github.com/Vallasc/clockclock24-replica) with several hardware modifications and improvements. The clock features 24 double-shaft stepper motors arranged in an 8x3 matrix, with motors grouped in sets of three on custom PCBs, of which there are eight in total. Each board is controlled by a Raspberry Pi Pico microcontroller acting as a slave, while all slave boards communicate with a central ESP32 master via the I2C protocol. The ESP32 also provides a web interface for remote control and configuration.
 
-https://github.com/user-attachments/assets/afd09497-f928-4de0-870f-ff79c54d2813
+<img width="732" height="368" alt="chaos_intro" src="https://github.com/user-attachments/assets/f1ae318c-d4e3-4e5c-b8e9-47247abbe801" />
+
 
 ---
 
@@ -310,29 +311,18 @@ When the **Cycle** animation is selected, the clock rotates through the availabl
 
 ### Animations
 
-#### Star
 
-https://github.com/user-attachments/assets/974c3be4-1d8c-499e-901f-cf6359da658e
+| Description      | Animation |
+| ----------- | ----------- |
+| Chaos | <img width="800" height="450" alt="chaos" src="https://github.com/user-attachments/assets/e29897ab-4f4e-4fe6-9859-ebd2666d46cb" /> |
+| Waves | <img width="800" height="450" alt="waves" src="https://github.com/user-attachments/assets/e16ad3b4-2f62-4ef9-ab85-b16ec1aede60" /> |
+| Circle | <img width="800" height="371" alt="circle" src="https://github.com/user-attachments/assets/6b4b8353-2990-417c-9432-9ce0a07b15ce" /> |
+| Spiral | <img width="800" height="450" alt="spiral" src="https://github.com/user-attachments/assets/fec7f138-3832-4b30-ba87-df4e90728056" /> |
+| Loom | <img width="800" height="450" alt="loom" src="https://github.com/user-attachments/assets/c3bc31cb-95cf-4cef-8ab1-a3840b1b90d0" /> |
+| Star | <img width="800" height="450" alt="star" src="https://github.com/user-attachments/assets/15269d1d-2127-4562-b4bb-fc945e29363d" /> |
 
-#### Loom
 
-https://github.com/user-attachments/assets/a73ca92e-b080-4c7b-8e86-1c2305fc6c1c
 
-#### Sprial
-
-https://github.com/user-attachments/assets/7440f7f9-dbd7-41e6-ab2a-407f3a3d8da3
-
-#### Circle
-
-https://github.com/user-attachments/assets/f53467dd-9c30-4d9d-ac92-7847988e9c31
-
-#### Waves
-
-https://github.com/user-attachments/assets/cff895c9-7d88-41c0-b8b3-85d1ee7fd593
-
-#### Chaos
-
-https://github.com/user-attachments/assets/0f3a5fa1-277e-4495-aa6d-477161758a04
 
 
 
